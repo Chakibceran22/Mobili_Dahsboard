@@ -1,0 +1,177 @@
+<div class="tb-ai-chat">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-left">
+      <mat-icon>chat</mat-icon>
+      <h1>ThingsBoard AI Assistant</h1>
+    </div>
+    <div class="header-right">
+      <div class="status-indicator" [class]="dbStatus?.connected ? 'connected' : 'disconnected'">
+        <mat-icon>storage</mat-icon>
+        <span>
+          {{ dbStatus?.connected ? (dbStatus.document_count + ' docs') : 'Disconnected' }}
+        </span>
+      </div>
+      <button mat-icon-button (click)="openSettings()" matTooltip="Settings">
+        <mat-icon>settings</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Chat Area -->
+  <div class="chat-main">
+    <!-- Welcome Screen -->
+    <div *ngIf="messages.length === 0" class="welcome-screen">
+      <div class="welcome-content">
+        <h2>👋 Welcome to ThingsBoard AI Assistant</h2>
+        <p>Ask questions about ThingsBoard IoT platform and get expert answers!</p>
+        
+        <div *ngIf="!apiKey" class="api-key-prompt">
+          <p>🔑 Please set your Gemini API key in settings to get started</p>
+          <button mat-raised-button color="primary" (click)="openSettings()">
+            Configure API Key
+          </button>
+        </div>
+
+        <div *ngIf="apiKey" class="sample-questions">
+          <h3>💡 Try asking:</h3>
+          <div class="questions-grid">
+            <button 
+              *ngFor="let question of sampleQuestions"
+              mat-stroked-button 
+              class="sample-question"
+              (click)="setSampleQuestion(question)">
+              {{ question }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div #messagesContainer class="messages-container" [class.has-messages]="messages.length > 0">
+      <!-- Messages -->
+      <div *ngFor="let message of messages" 
+           class="message" 
+           [class.user-message]="message.isUser" 
+           [class.bot-message]="!message.isUser">
+        <div class="message-content">
+          <div class="message-text">{{ message.text }}</div>
+          <div *ngIf="message.timestamp" class="message-time">
+            {{ formatTime(message.timestamp) }}
+          </div>
+          
+          <!-- Sources -->
+          <div *ngIf="message.sources && message.sources.length > 0" class="message-sources">
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  📚 Sources ({{ message.sources.length }})
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="sources-list">
+                <div *ngFor="let source of message.sources" class="source-item">
+                  <div class="source-title">{{ source.title }}</div>
+                  <div class="source-category">{{ source.category }}</div>
+                  <a *ngIf="source.url" 
+                     [href]="source.url" 
+                     target="_blank" 
+                     rel="noopener noreferrer" 
+                     mat-button 
+                     color="primary">
+                    View Documentation →
+                  </a>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Loading Message -->
+      <div *ngIf="loading" class="loading-message">
+        <div class="loading-content">
+          <mat-spinner [diameter]="24"></mat-spinner>
+          <span>Thinking...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="chat-footer">
+    <!-- Error Banner -->
+    <div *ngIf="error" class="error-banner">
+      <mat-icon>warning</mat-icon>
+      {{ error }}
+    </div>
+    
+    <div class="input-container">
+      <mat-form-field class="input-field" appearance="outline">
+        <textarea 
+          #messageInput
+          matInput 
+          [(ngModel)]="inputValue"
+          (keydown)="onKeyPress($event)"
+          [placeholder]="apiKey ? 'Ask about ThingsBoard...' : 'Configure API key first...'"
+          [disabled]="!apiKey || loading"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="1"
+          cdkAutosizeMaxRows="4">
+        </textarea>
+        
+        <button 
+          mat-icon-button 
+          matSuffix 
+          (click)="sendMessage()"
+          [disabled]="!apiKey || !inputValue.trim() || loading"
+          color="primary">
+          <mat-icon>send</mat-icon>
+        </button>
+      </mat-form-field>
+      
+      <button 
+        *ngIf="messages.length > 0" 
+        mat-stroked-button 
+        class="clear-button"
+        (click)="clearChat()">
+        Clear Chat
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="settings-panel" [class.open]="showSettings">
+    <div class="settings-header">
+      <h3>
+        <mat-icon>settings</mat-icon>
+        Settings
+      </h3>
+      <button mat-icon-button (click)="closeSettings()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div class="settings-content">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Gemini API Key</mat-label>
+        <input 
+          matInput 
+          type="password"
+          placeholder="Enter your Gemini API key..."
+          [(ngModel)]="apiKey"
+          (blur)="saveApiKey()">
+        <mat-hint>
+          Get a free API key at 
+          <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+            Google AI Studio
+          </a>
+        </mat-hint>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div *ngIf="showSettings" class="overlay" (click)="closeSettings()"></div>
+</div>
