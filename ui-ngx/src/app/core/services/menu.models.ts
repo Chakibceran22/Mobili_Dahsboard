@@ -105,7 +105,8 @@ export enum MenuId {
   otaUpdates = 'otaUpdates',
   version_control = 'version_control',
   api_usage = 'api_usage',
-  trendz_settings = 'trendz_settings'
+  trendz_settings = 'trendz_settings',
+  custom_page = 'custom_page' // Add your new menu item here
 }
 
 declare type MenuFilter = (authState: AuthState) => boolean;
@@ -696,6 +697,16 @@ export const menuSectionMap = new Map<MenuId, MenuSection>([
       path: '/settings/trendz',
       icon: 'trendz-settings'
     }
+  ],
+  [
+    MenuId.custom_page,
+    {
+      id: MenuId.custom_page,
+      name: 'custom-page.page-title',
+      type: 'link',
+      path: '/custom',
+      icon: 'chat'
+    }
   ]
 ]);
 
@@ -870,7 +881,8 @@ const defaultUserMenuMap = new Map<Authority, MenuReference[]>([
             ]
           }
         ]
-      }
+      },
+      {id: MenuId.custom_page}
     ]
   ],
   [
