@@ -46,7 +46,8 @@ import { AccountModule } from '@home/pages/account/account.module';
 import { ScadaSymbolModule } from '@home/pages/scada-symbol/scada-symbol.module';
 import { GatewaysModule } from '@home/pages/gateways/gateways.module';
 import { MobileModule } from '@home/pages/mobile/mobile.module';
-import { CustomModule } from '@home/pages/custom/custom.module';
+import { AiAssistantModule } from '@home/pages/ai-assistant/ai-assistant.module';
+import { AiInsightModule } from '@home/pages/ai-insight/ai-insight.module';
 
 @NgModule({
   exports: [
@@ -80,7 +81,8 @@ import { CustomModule } from '@home/pages/custom/custom.module';
     VcModule,
     AccountModule,
     ScadaSymbolModule,
-    CustomModule
+    AiAssistantModule,
+    AiInsightModule
   ]
 })
 export class HomePagesModule { }

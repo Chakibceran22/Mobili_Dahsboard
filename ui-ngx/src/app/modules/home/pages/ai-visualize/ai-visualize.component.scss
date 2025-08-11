@@ -1,0 +1,164 @@
+///
+/// Copyright © 2016-2025 The Thingsboard Authors
+///
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+/// You may obtain a copy of the License at
+///
+///     http://www.apache.org/licenses/LICENSE-2.0
+///
+/// Unless required by applicable law or agreed to in writing, software
+/// distributed under the License is distributed on an "AS IS" BASIS,
+/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+/// See the License for the specific language governing permissions and
+/// limitations under the License.
+///
+
+.tb-ai-visualize {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .visualize-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fafafa;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      mat-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: #1976d2;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 400;
+        color: #212121;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .visualize-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background: #f5f5f5;
+
+    .coming-soon-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+
+      .coming-soon-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: #ff9800;
+        margin-bottom: 16px;
+      }
+
+      h2 {
+        font-size: 28px;
+        font-weight: 400;
+        color: #212121;
+        margin-bottom: 16px;
+      }
+
+      p {
+        font-size: 16px;
+        color: #757575;
+        margin-bottom: 32px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .features-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-top: 32px;
+
+        .feature-card {
+          text-align: left;
+
+          mat-card-header {
+            mat-icon {
+              color: #1976d2;
+              font-size: 24px;
+              width: 24px;
+              height: 24px;
+            }
+          }
+
+          mat-card-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #212121;
+          }
+
+          mat-card-content {
+            color: #757575;
+            font-size: 14px;
+            line-height: 1.5;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark theme support
+.tb-dark {
+  .tb-ai-visualize {
+    .visualize-header {
+      background: #303030;
+      border-bottom-color: #424242;
+
+      .header-left h1 {
+        color: #ffffff;
+      }
+    }
+
+    .visualize-content {
+      background: #212121;
+
+      .coming-soon-container {
+        h2 {
+          color: #ffffff;
+        }
+
+        p {
+          color: #b0b0b0;
+        }
+
+        .feature-card {
+          mat-card-title {
+            color: #ffffff;
+          }
+
+          mat-card-content {
+            color: #b0b0b0;
+          }
+        }
+      }
+    }
+  }
+}

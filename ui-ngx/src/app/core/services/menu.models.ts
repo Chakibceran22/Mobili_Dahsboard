@@ -106,7 +106,10 @@ export enum MenuId {
   version_control = 'version_control',
   api_usage = 'api_usage',
   trendz_settings = 'trendz_settings',
-  custom_page = 'custom_page' // Add your new menu item here
+  ai = 'ai',
+  ai_assistant = 'ai_assistant',
+  ai_insight = 'ai_insight',
+  ai_visualize = 'ai_visualize'
 }
 
 declare type MenuFilter = (authState: AuthState) => boolean;
@@ -699,13 +702,33 @@ export const menuSectionMap = new Map<MenuId, MenuSection>([
     }
   ],
   [
-    MenuId.custom_page,
+    MenuId.ai,
     {
-      id: MenuId.custom_page,
-      name: 'custom-page.page-title',
+      id: MenuId.ai,
+      name: 'ai.ai',
+      type: 'toggle',
+      path: '/ai',
+      icon: 'smart_toy'
+    }
+  ],
+  [
+    MenuId.ai_assistant,
+    {
+      id: MenuId.ai_assistant,
+      name: 'ai-assistant.page-title',
       type: 'link',
-      path: '/custom',
+      path: '/ai-assistant',
       icon: 'chat'
+    }
+  ],
+  [
+    MenuId.ai_insight,
+    {
+      id: MenuId.ai_insight,
+      name: 'ai-insight.page-title',
+      type: 'link',
+      path: '/ai-insight',
+      icon: 'smart_toy'
     }
   ]
 ]);
@@ -882,7 +905,13 @@ const defaultUserMenuMap = new Map<Authority, MenuReference[]>([
           }
         ]
       },
-      {id: MenuId.custom_page}
+      {
+        id: MenuId.ai,
+        pages: [
+          {id: MenuId.ai_assistant},
+          {id: MenuId.ai_insight}
+        ]
+      }
     ]
   ],
   [

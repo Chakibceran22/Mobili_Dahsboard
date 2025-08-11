@@ -18,7 +18,7 @@ services:
 
   thingsboard-ce:
     restart: always
-    image: "chakibceran22/tb-node:latest" # My Custom image from dockrhub ith the custom mobilis ui  
+    image: "tb-node:4.1.0" # Local build with latest changes
     ports:
       - "8081:8080"      # Web UI (ThingsBoard runs on 9090 internally)
       - "7070:7070"      # Edge RPC

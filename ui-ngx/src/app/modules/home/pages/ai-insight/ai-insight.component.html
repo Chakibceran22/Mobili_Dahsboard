@@ -1,0 +1,141 @@
+<div class="tb-ai-insight-page">
+  <!-- Time Series Anomaly Detection Section -->
+  <div class="timeseries-section">
+    <div class="section-header">
+      <h2>
+        <mat-icon>timeline</mat-icon>
+        Solar Power Anomaly Detection
+      </h2>
+      <div class="model-info" *ngIf="modelType">
+        <span class="model-badge">{{ modelType }} Model</span>
+      </div>
+      <div class="section-actions">
+        <button mat-icon-button color="primary" (click)="toggleSettings()" 
+                matTooltip="Display Settings" [class.active]="showSettings">
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading">
+          <mat-icon>refresh</mat-icon>
+          Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" *ngIf="showSettings" [@slideDown]>
+      <div class="settings-header">
+        <h3>
+          <mat-icon>tune</mat-icon>
+          Display Settings
+        </h3>
+      </div>
+      <div class="settings-content">
+        <div class="setting-item">
+          <mat-slide-toggle 
+            [(ngModel)]="showPredictions"
+            (change)="onSettingsChange()"
+            color="primary">
+            Show Model Predictions
+          </mat-slide-toggle>
+          <p class="setting-description">
+            Display the dashed blue line showing model predicted values
+          </p>
+        </div>
+        <div class="setting-item">
+          <mat-slide-toggle 
+            [(ngModel)]="showAnomalyPoints"
+            (change)="onSettingsChange()"
+            color="primary">
+            Show Anomaly Points
+          </mat-slide-toggle>
+          <p class="setting-description">
+            Highlight detected anomalies as red circles on the chart
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeseries-content" *ngIf="!loading && !error">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value">{{ totalPoints }}</div>
+          <div class="stat-label">Total Points</div>
+        </div>
+        <div class="stat-card anomaly">
+          <div class="stat-value">{{ anomalyCount }}</div>
+          <div class="stat-label">Anomalies Detected</div>
+          <div class="stat-percentage" *ngIf="anomalyPercentage > 0">
+            {{ anomalyPercentage }}% of data
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div #timeseriesChart class="chart"></div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-line ground-truth"></div>
+          <span>Ground Truth</span>
+        </div>
+        <div class="legend-item" *ngIf="showPredictions">
+          <div class="legend-line prediction"></div>
+          <span>Model Prediction</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color normal"></div>
+          <span>Normal Points</span>
+        </div>
+        <div class="legend-item" *ngIf="showAnomalyPoints">
+          <div class="legend-color anomaly"></div>
+          <span>Detected Anomalies</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-container" *ngIf="loading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Loading time series data...</p>
+    </div>
+
+    <div class="error-container" *ngIf="error">
+      <mat-icon color="warn">error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="accent" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- Coming Soon Section for Other Features -->
+  <div class="coming-soon-container">
+    <div class="coming-soon-content">
+      <mat-icon class="coming-soon-icon">smart_toy</mat-icon>
+      <h1>More AI Insights Coming Soon</h1>
+      <p>We're working on additional AI-driven insights to help you better understand your IoT data and make smarter decisions.</p>
+      
+      <div class="features-preview">
+        <div class="feature-item">
+          <mat-icon>analytics</mat-icon>
+          <span>Advanced Analytics</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>trending_up</mat-icon>
+          <span>Predictive Trends</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>lightbulb</mat-icon>
+          <span>Smart Recommendations</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>psychology</mat-icon>
+          <span>Pattern Recognition</span>
+        </div>
+      </div>
+      
+      <p class="coming-soon-subtitle">Stay tuned for exciting updates!</p>
+    </div>
+  </div>
+</div>

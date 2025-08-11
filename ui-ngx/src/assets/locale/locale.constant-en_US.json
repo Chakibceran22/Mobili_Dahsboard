@@ -1155,7 +1155,10 @@
         "text": "Text",
         "binary": "Binary (Base64)"
     },
-    "custom-page": {
+    "ai": {
+        "ai": "AI"
+    },
+    "ai-assistant": {
         "page-title": "AI Assistant",
         "welcome-title": "Welcome to ThingsBoard AI Assistant",
         "welcome-subtitle": "Ask questions about ThingsBoard IoT platform and get expert answers!",
@@ -1174,6 +1177,9 @@
         "connected": "connected",
         "disconnected": "Disconnected",
         "docs": "docs"
+    },
+    "ai-insight": {
+        "page-title": "AI Insight"
     },
     "customer": {
         "customer": "Customer",
