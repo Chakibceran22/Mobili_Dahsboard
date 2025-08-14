@@ -1,0 +1,4 @@
+# DHT11 Device Configuration
+device_id=d8d4cc30-7840-11f0-9adf-95dc3a2607cb
+token=C9xJ7JM378njP263QEri
+# Use this token in test_dht11.py

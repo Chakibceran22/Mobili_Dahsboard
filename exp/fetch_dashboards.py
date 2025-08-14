@@ -219,7 +219,7 @@ def main():
     
     # Search for Energy Management dashboard
     print("\n🔍 Searching for 'Energy Management' dashboard...")
-    energy_dashboards = fetcher.search_dashboards("energy management")
+    energy_dashboards = fetcher.search_dashboards("test")
     
     if energy_dashboards:
         print(f"\nFound {len(energy_dashboards)} Energy Management dashboard(s):")

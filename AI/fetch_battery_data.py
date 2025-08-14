@@ -70,7 +70,7 @@ def save_telemetry_data(telemetry_data, device_id, key_name):
     """Save telemetry data to JSON file for later plotting"""
     timestamp = time.strftime('%Y%m%d_%H%M%S')
     filename = f"{key_name}_data_{device_id}_{timestamp}.json"
-    filepath = os.path.join("data", filename)
+    filepath = os.path.join("AI/data", filename)
     
     # Create data directory if it doesn't exist
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     import sys
     
     # Default values
-    device_id = "d1089320-6acf-11f0-8d88-0f481e2e4d44"
+    device_id = "75cc3ef0-7789-11f0-9adf-95dc3a2607cb"
     keys = "batteryLevel"
     days_back = None
     

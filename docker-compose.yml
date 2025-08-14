@@ -18,11 +18,11 @@ services:
 
   thingsboard-ce:
     restart: always
-    image: "tb-node:4.1.0" # Local build with latest changes
+    image: "chakibceran22/tb-node:latest" # Local build with latest changes
     ports:
       - "8081:8080"      # Web UI (ThingsBoard runs on 9090 internally)
       - "7070:7070"      # Edge RPC
-      - "1883:1883"      # MQTT
+      - "1884:1883"      # MQTT
       - "8883:8883"      # MQTT over SSL
       - "5683-5688:5683-5688/udp"  # CoAP and LwM2M
     logging:

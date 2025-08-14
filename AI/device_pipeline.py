@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from fetch_battery_data import main as fetch_data
 from plot_battery_data import plot_latest_data, plot_all_data
 
-def run_full_pipeline(device_id="d1089320-6acf-11f0-8d88-0f481e2e4d44", keys="batteryLevel", chart_type="line", days_back=None):
+def run_full_pipeline(device_id="75cc3ef0-7789-11f0-9adf-95dc3a2607cb", keys="batteryLevel", chart_type="line", days_back=None):
     """Run the complete data pipeline: fetch -> plot
     
     Args:
@@ -58,7 +58,7 @@ def main():
     import sys
     
     # Default values
-    device_id = "d1089320-6acf-11f0-8d88-0f481e2e4d44"
+    device_id = "75cc3ef0-7789-11f0-9adf-95dc3a2607cb"
     keys = "batteryLevel"
     chart_type = "line"
     days_back = None

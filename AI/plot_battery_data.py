@@ -184,8 +184,8 @@ def plot_latest_data(chart_type="bar"):
     Args:
         chart_type: Type of chart to create ("line" or "bar")
     """
-    data_dir = "data"
-    plots_dir = "plots"
+    data_dir = "AI/data"
+    plots_dir = "AI/plots"
     
     # Find all JSON files in data directory (both old and new formats)
     json_files = glob.glob(os.path.join(data_dir, "*_data_*.json"))
