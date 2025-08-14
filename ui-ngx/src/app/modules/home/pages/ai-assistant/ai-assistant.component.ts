@@ -16,6 +16,7 @@
 
 import { Component, OnInit, AfterViewChecked, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { AiChatService, ChatMessage, DatabaseStatus } from './ai-chat.service';
+import { AiVisualizerService, VisualizationMessage } from './ai-visualizer.service';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 
@@ -27,7 +28,10 @@ import { takeUntil, switchMap } from 'rxjs/operators';
 export class AiAssistantComponent implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer: ElementRef;
   @ViewChild('messageInput') private messageInput: ElementRef;
+  @ViewChild('visualizeMessagesContainer') private visualizeMessagesContainer: ElementRef;
+  @ViewChild('visualizeMessageInput') private visualizeMessageInput: ElementRef;
 
+  // Chat page properties
   messages: ChatMessage[] = [];
   inputValue = '';
   apiKey = '';
@@ -36,8 +40,18 @@ export class AiAssistantComponent implements OnInit, AfterViewChecked, OnDestroy
   error: string | null = null;
   dbStatus: DatabaseStatus | null = null;
 
+  // Visualize page properties
+  visualizeMessages: VisualizationMessage[] = [];
+  visualizeInputValue = '';
+  visualizeLoading = false;
+  visualizeError: string | null = null;
+
+  // Page toggle functionality
+  currentPage: 'chat' | 'visualize' = 'chat';
+
   private destroy$ = new Subject<void>();
   private shouldScrollToBottom = false;
+  private shouldScrollVisualizerToBottom = false;
 
   sampleQuestions = [
     "How do I connect a device to ThingsBoard?",
@@ -46,7 +60,17 @@ export class AiAssistantComponent implements OnInit, AfterViewChecked, OnDestroy
     "How to create a dashboard?"
   ];
 
-  constructor(private aiChatService: AiChatService) {
+  visualizeSampleQuestions = [
+    "Show me battery data for the last 7 days",
+    "Plot temperature data for today",
+    "Create a bar chart of humidity levels",
+    "Display battery levels for the last 3 hours"
+  ];
+
+  constructor(
+    private aiChatService: AiChatService,
+    private aiVisualizerService: AiVisualizerService
+  ) {
     // Load API key from localStorage
     this.apiKey = localStorage.getItem('gemini_api_key') || '';
   }
@@ -79,6 +103,10 @@ export class AiAssistantComponent implements OnInit, AfterViewChecked, OnDestroy
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
       this.shouldScrollToBottom = false;
+    }
+    if (this.shouldScrollVisualizerToBottom) {
+      this.scrollVisualizerToBottom();
+      this.shouldScrollVisualizerToBottom = false;
     }
   }
 
@@ -198,6 +226,96 @@ export class AiAssistantComponent implements OnInit, AfterViewChecked, OnDestroy
     } catch (err) {
       console.error('Error scrolling to bottom:', err);
     }
+  }
+
+  // Visualizer methods
+  sendVisualizationMessage(): void {
+    if (!this.visualizeInputValue.trim() || this.visualizeLoading) {
+      return;
+    }
+
+    const userMessage: VisualizationMessage = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: this.visualizeInputValue,
+      timestamp: new Date().toISOString()
+    };
+
+    this.visualizeMessages.push(userMessage);
+    const prompt = this.visualizeInputValue;
+    this.visualizeInputValue = '';
+    this.visualizeLoading = true;
+    this.visualizeError = null;
+    this.shouldScrollVisualizerToBottom = true;
+
+    this.aiVisualizerService.sendVisualizationRequest(prompt).subscribe({
+      next: (response) => {
+        const botMessage: VisualizationMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: response.message || 'Visualization generated successfully',
+          timestamp: new Date().toISOString(),
+          plotUrl: response.plot_url,
+          details: response.details
+        };
+
+        this.visualizeMessages.push(botMessage);
+        this.visualizeLoading = false;
+        this.shouldScrollVisualizerToBottom = true;
+      },
+      error: (error) => {
+        const errorMessage: VisualizationMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: `Error: ${error}`,
+          timestamp: new Date().toISOString()
+        };
+
+        this.visualizeMessages.push(errorMessage);
+        this.visualizeLoading = false;
+        this.visualizeError = error;
+        this.shouldScrollVisualizerToBottom = true;
+      }
+    });
+  }
+
+  onVisualizerKeyPress(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendVisualizationMessage();
+    }
+  }
+
+  clearVisualizerMessages(): void {
+    this.visualizeMessages = [];
+    this.visualizeError = null;
+  }
+
+  setVisualizeSampleQuestion(question: string): void {
+    this.visualizeInputValue = question;
+    if (this.visualizeMessageInput) {
+      this.visualizeMessageInput.nativeElement.focus();
+    }
+  }
+
+  private scrollVisualizerToBottom(): void {
+    try {
+      if (this.visualizeMessagesContainer) {
+        const element = this.visualizeMessagesContainer.nativeElement;
+        element.scrollTop = element.scrollHeight;
+      }
+    } catch (err) {
+      console.error('Error scrolling visualizer to bottom:', err);
+    }
+  }
+
+  // Page toggle methods
+  switchToChat(): void {
+    this.currentPage = 'chat';
+  }
+
+  switchToVisualize(): void {
+    this.currentPage = 'visualize';
   }
 
   formatTime(timestamp: string): string {

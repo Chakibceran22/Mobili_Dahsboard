@@ -10,25 +10,115 @@ import requests
 import time
 import json
 import os
+from datetime import datetime, timedelta
 
-def get_device_timeseries_by_id(device_id, jwt_token, keys="batteryLevel", base_url="http://localhost:8081", days_back=None):
-    """Fetch time series data directly using device ID - same as widgets do"""
+def calculate_time_range(end_time, days_back=None, hours_back=None, time_range=None):
+    """Calculate start_time, description, and custom_end_time based on various time range parameters"""
+
+    # Handle new time_range format first
+    if time_range:
+        return calculate_advanced_time_range(end_time, time_range)
+
+    # Handle hours_back
+    if hours_back is not None:
+        start_time = end_time - (hours_back * 60 * 60 * 1000)
+        description = f"last {hours_back} hour(s)"
+        return start_time, description, None
+
+    # Handle days_back (legacy)
+    if days_back is not None:
+        start_time = end_time - (days_back * 24 * 60 * 60 * 1000)
+        description = f"last {days_back} day(s)"
+        return start_time, description, None
+
+    # Default: entire history
+    start_time = 0
+    description = "ENTIRE telemetry history"
+    return start_time, description, None
+
+def calculate_advanced_time_range(end_time, time_range):
+    """Calculate time range for advanced specifications"""
+    now = datetime.fromtimestamp(end_time / 1000)
+
+    # Handle simple hours_back or days_back
+    if time_range.get('hours_back'):
+        hours = time_range['hours_back']
+        start_time = end_time - (hours * 60 * 60 * 1000)
+        return start_time, f"last {hours} hour(s)", None
+
+    if time_range.get('days_back'):
+        days = time_range['days_back']
+        start_time = end_time - (days * 24 * 60 * 60 * 1000)
+        return start_time, f"last {days} day(s)", None
+
+    # Handle specific day with optional hour range
+    if time_range.get('specific_day_offset') is not None:
+        day_offset = time_range['specific_day_offset']
+        target_date = now - timedelta(days=day_offset)
+
+        # Set start and end hours
+        start_hour = time_range.get('start_hour', 0)
+        end_hour = time_range.get('end_hour', 23)
+
+        # Create start and end datetime objects
+        start_dt = target_date.replace(hour=start_hour, minute=0, second=0, microsecond=0)
+        end_dt = target_date.replace(hour=end_hour, minute=59, second=59, microsecond=999999)
+
+        start_time = int(start_dt.timestamp() * 1000)
+        custom_end_time = int(end_dt.timestamp() * 1000)
+
+        # Create description
+        if day_offset == 0:
+            day_desc = "today"
+        elif day_offset == 1:
+            day_desc = "yesterday"
+        else:
+            day_desc = f"{day_offset} days ago"
+
+        if start_hour != 0 or end_hour != 23:
+            time_desc = f"{day_desc} from {start_hour:02d}:00 to {end_hour:02d}:59"
+        else:
+            time_desc = day_desc
+
+        return start_time, time_desc, custom_end_time
+
+    # Fallback
+    return 0, "entire history", None
+
+def get_device_timeseries_by_id(device_id, jwt_token, keys="batteryLevel", base_url="http://localhost:8081",
+                                days_back=None, hours_back=None, time_range=None):
+    """Fetch time series data directly using device ID - same as widgets do
+
+    Args:
+        device_id: Device ID to fetch data from
+        jwt_token: Authentication token
+        keys: Telemetry keys to fetch (comma-separated)
+        base_url: ThingsBoard base URL
+        days_back: Number of days back (legacy parameter)
+        hours_back: Number of hours back
+        time_range: Dictionary with detailed time range specification:
+            {
+                'hours_back': int,
+                'days_back': int,
+                'specific_day_offset': int,  # 0=today, 1=yesterday, etc.
+                'start_hour': int,           # 0-23
+                'end_hour': int              # 0-23
+            }
+    """
     headers = {
         'Authorization': f'Bearer {jwt_token}',
         'Content-Type': 'application/json'
     }
-    
-    # Get data from entire history or specified days back
-    end_time = int(time.time() * 1000)
-    if days_back is None:
-        # Fetch entire history - start from epoch (1970)
-        start_time = 0
-        print(f"📊 Fetching ENTIRE telemetry history for {keys}...")
-    else:
-        # Fetch specific number of days
-        start_time = end_time - (days_back * 24 * 60 * 60 * 1000)
-        print(f"📊 Fetching {keys} telemetry for last {days_back} days...")
-    
+
+    # Calculate time range based on parameters
+    current_time = int(time.time() * 1000)
+    start_time, time_description, custom_end_time = calculate_time_range(current_time, days_back, hours_back, time_range)
+
+    # Use custom end time if specified (for specific day ranges), otherwise use current time
+    end_time = custom_end_time if custom_end_time else current_time
+
+    print(f"📊 Fetching {keys} telemetry for {time_description}...")
+
     url = f"{base_url}/api/plugins/telemetry/DEVICE/{device_id}/values/timeseries"
     params = {
         'keys': keys,
@@ -181,13 +271,16 @@ def fetch_with_pagination(device_id, jwt_token, keys="batteryLevel", base_url="h
     print(f"📊 Total data points collected: {len(all_telemetry_data)}")
     return all_telemetry_data
 
-def main(device_id="d1089320-6acf-11f0-8d88-0f481e2e4d44", keys="batteryLevel", days_back=None):
+def main(device_id="d1089320-6acf-11f0-8d88-0f481e2e4d44", keys="batteryLevel", days_back=None,
+         hours_back=None, time_range=None):
     """Main function - demonstrates how widgets fetch telemetry data
-    
+
     Args:
         device_id (str): Device ID to fetch data from. Default: d1089320-6acf-11f0-8d88-0f481e2e4d44 (My Battery Sensor)
         keys (str): Telemetry keys to fetch (comma-separated). Default: batteryLevel
-        days_back (int, optional): Number of days back to fetch data. 
+        days_back (int, optional): Number of days back to fetch data (legacy parameter)
+        hours_back (int, optional): Number of hours back to fetch data
+        time_range (dict, optional): Advanced time range specification
                                   If None, fetches entire history.
                                   Examples: 1 (last 24h), 7 (last week), 30 (last month)
     """
@@ -224,7 +317,8 @@ def main(device_id="d1089320-6acf-11f0-8d88-0f481e2e4d44", keys="batteryLevel", 
     
     # Step 3: Fetch time series data
     print(f"\n📊 Fetching {keys} history...")
-    telemetry_data = get_device_timeseries_by_id(device_id, jwt_token, keys, days_back=days_back)
+    telemetry_data = get_device_timeseries_by_id(device_id, jwt_token, keys,
+                                                days_back=days_back, hours_back=hours_back, time_range=time_range)
     
     print("\n" + "=" * 50)
     print("🎯 This is exactly the same data that appears in your")

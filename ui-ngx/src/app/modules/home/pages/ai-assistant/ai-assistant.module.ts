@@ -21,6 +21,7 @@ import { AiAssistantComponent } from './ai-assistant.component';
 import { AiAssistantRoutingModule } from './ai-assistant-routing.module';
 import { HomeComponentsModule } from '@modules/home/components/home-components.module';
 import { AiChatService } from './ai-chat.service';
+import { AiVisualizerService } from './ai-visualizer.service';
 import { FormsModule } from '@angular/forms';
 
 @NgModule({
@@ -35,7 +36,8 @@ import { FormsModule } from '@angular/forms';
     AiAssistantRoutingModule
   ],
   providers: [
-    AiChatService
+    AiChatService,
+    AiVisualizerService
   ]
 })
 export class AiAssistantModule { }

@@ -14,6 +14,42 @@ import matplotlib.dates as mdates
 from datetime import datetime
 import numpy as np
 import glob
+import seaborn as sns
+from matplotlib.patches import Rectangle
+import matplotlib.patches as mpatches
+
+# Set up beautiful plotting style
+plt.style.use('seaborn-v0_8-darkgrid')
+sns.set_palette("husl")
+
+# Custom color schemes for different data types
+COLOR_SCHEMES = {
+    'battery': {
+        'primary': '#2ECC71',      # Emerald green
+        'secondary': '#27AE60',    # Darker green
+        'gradient': ['#E8F8F5', '#2ECC71', '#1E8449'],
+        'critical': '#E74C3C'      # Red for low battery
+    },
+    'temperature': {
+        'primary': '#E74C3C',      # Red
+        'secondary': '#C0392B',    # Darker red
+        'gradient': ['#FDF2E9', '#E74C3C', '#922B21'],
+        'cold': '#3498DB',         # Blue for cold
+        'hot': '#E74C3C'          # Red for hot
+    },
+    'humidity': {
+        'primary': '#3498DB',      # Blue
+        'secondary': '#2980B9',    # Darker blue
+        'gradient': ['#EBF5FB', '#3498DB', '#1B4F72'],
+        'dry': '#F39C12',         # Orange for dry
+        'wet': '#3498DB'          # Blue for wet
+    },
+    'default': {
+        'primary': '#9B59B6',      # Purple
+        'secondary': '#8E44AD',    # Darker purple
+        'gradient': ['#F4ECF7', '#9B59B6', '#5B2C6F']
+    }
+}
 
 def load_telemetry_data(json_filepath):
     """Load telemetry data from JSON file"""
@@ -27,6 +63,47 @@ def load_telemetry_data(json_filepath):
     except json.JSONDecodeError:
         print(f"❌ Invalid JSON in file: {json_filepath}")
         return None
+
+def get_device_name(device_id):
+    """Get device name from device ID using the list_devices functionality"""
+    try:
+        # Import the list_devices function
+        from list_devices import list_devices
+        devices = list_devices()
+
+        for device in devices:
+            if device.get('id', {}).get('id') == device_id:
+                return device.get('name', f'Device {device_id[:8]}...')
+
+        # If not found, return a shortened device ID
+        return f'Device {device_id[:8]}...'
+    except Exception as e:
+        print(f"⚠️  Could not fetch device name: {e}")
+        return f'Device {device_id[:8]}...'
+
+def get_color_scheme(key_name):
+    """Get appropriate color scheme based on data type"""
+    key_lower = key_name.lower()
+    if 'battery' in key_lower:
+        return COLOR_SCHEMES['battery']
+    elif 'temp' in key_lower:
+        return COLOR_SCHEMES['temperature']
+    elif 'humid' in key_lower:
+        return COLOR_SCHEMES['humidity']
+    else:
+        return COLOR_SCHEMES['default']
+
+def get_unit_and_range(key_name):
+    """Get appropriate unit and value range for different data types"""
+    key_lower = key_name.lower()
+    if 'battery' in key_lower:
+        return '%', (0, 100)
+    elif 'temp' in key_lower:
+        return '°C', None  # Dynamic range for temperature
+    elif 'humid' in key_lower:
+        return '%', (0, 100)
+    else:
+        return '', None  # No unit, dynamic range
 
 def extract_time_series(telemetry_data):
     """Extract timestamps and values from telemetry data"""
@@ -44,88 +121,220 @@ def extract_time_series(telemetry_data):
     
     return timestamps, values
 
-def create_telemetry_plot(timestamps, values, device_id, key_name, save_dir, chart_type="bar"):
-    """Create a visualization of telemetry values over time
-    
-    Args:
-        chart_type: Type of chart to create ("line" or "bar")
-    """
-    plt.figure(figsize=(12, 6))
-    
-    # Determine units and color based on key name
-    unit = ""
-    color = '#2E8B57'  # Default green
-    if "battery" in key_name.lower():
-        unit = "%"
-        color = '#2E8B57'  # Green for battery
-    elif "temp" in key_name.lower():
-        unit = "°C"
-        color = '#FF6B6B'  # Red for temperature
-    elif "humid" in key_name.lower():
-        unit = "%"
-        color = '#4ECDC4'  # Cyan for humidity
-    elif "pressure" in key_name.lower():
-        unit = " hPa"
-        color = '#45B7D1'  # Blue for pressure
-    
-    if chart_type == "bar":
-        # Create bar chart
-        plt.bar(range(len(values)), values, color=color, alpha=0.7)
-        plt.title(f'{key_name.title()} Distribution - Device {device_id}', fontsize=16, fontweight='bold')
-        plt.xlabel('Data Point Index', fontsize=12)
-        plt.ylabel(f'{key_name.title()} ({unit})' if unit else key_name.title(), fontsize=12)
-        
-        # Add time labels for every few bars to avoid crowding
-        step = max(1, len(timestamps) // 10)  # Show max 10 labels
-        tick_positions = range(0, len(timestamps), step)
-        tick_labels = [timestamps[i].strftime('%H:%M') for i in tick_positions]
-        plt.xticks(tick_positions, tick_labels, rotation=45)
-        
-    else:  # default to line chart
-        # Create line chart
-        plt.plot(timestamps, values, linewidth=2, color=color, marker='o', markersize=4)
-        plt.title(f'{key_name.title()} Over Time - Device {device_id}', fontsize=16, fontweight='bold')
-        plt.xlabel('Time', fontsize=12)
-        plt.ylabel(f'{key_name.title()} ({unit})' if unit else key_name.title(), fontsize=12)
-        
-        # Format x-axis for line chart
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-        plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=2))
-        plt.xticks(rotation=45)
-    
-    plt.grid(True, alpha=0.3)
-    
-    # Set y-axis limits based on data type
-    if "battery" in key_name.lower() or "humid" in key_name.lower():
-        plt.ylim(0, 100)
+def create_line_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit):
+    """Create an enhanced line chart"""
+    # Main line with gradient effect
+    ax.plot(timestamps, values, linewidth=3, color=color_scheme['primary'],
+            marker='o', markersize=6, markerfacecolor=color_scheme['secondary'],
+            markeredgecolor='white', markeredgewidth=2, alpha=0.9, label=f'{key_name.title()}')
+
+    # Add trend line if enough data points
+    if len(values) > 5:
+        z = np.polyfit(range(len(values)), values, 1)
+        p = np.poly1d(z)
+        trend_values = p(range(len(values)))
+        ax.plot(timestamps, trend_values, '--', color=color_scheme['secondary'],
+                alpha=0.7, linewidth=2, label='Trend')
+
+    # Format x-axis beautifully
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=max(1, len(timestamps)//8)))
+
+    return ax
+
+def create_area_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit):
+    """Create a beautiful area chart with gradient"""
+    # Create gradient fill
+    ax.fill_between(timestamps, values, alpha=0.3, color=color_scheme['primary'])
+    ax.plot(timestamps, values, linewidth=3, color=color_scheme['primary'],
+            marker='o', markersize=5, markerfacecolor=color_scheme['secondary'],
+            markeredgecolor='white', markeredgewidth=1.5)
+
+    # Add average line
+    avg_value = np.mean(values)
+    ax.axhline(y=avg_value, color=color_scheme['secondary'], linestyle='--',
+               alpha=0.8, linewidth=2, label=f'Average: {avg_value:.1f}{unit}')
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=max(1, len(timestamps)//8)))
+
+    return ax
+
+def create_bar_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit):
+    """Create an enhanced bar chart with color coding"""
+    # Color bars based on value ranges
+    colors = []
+    for value in values:
+        if 'battery' in key_name.lower():
+            if value < 20:
+                colors.append(color_scheme.get('critical', '#E74C3C'))
+            elif value < 50:
+                colors.append('#F39C12')  # Orange for medium
+            else:
+                colors.append(color_scheme['primary'])
+        else:
+            colors.append(color_scheme['primary'])
+
+    bars = ax.bar(range(len(values)), values, color=colors, alpha=0.8,
+                  edgecolor='white', linewidth=1)
+
+    # Add value labels on top of bars (for smaller datasets)
+    if len(values) <= 20:
+        for i, (bar, value) in enumerate(zip(bars, values)):
+            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(values)*0.01,
+                   f'{value:.1f}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+
+    # Format x-axis
+    step = max(1, len(timestamps) // 10)
+    tick_positions = range(0, len(timestamps), step)
+    tick_labels = [timestamps[i].strftime('%H:%M') for i in tick_positions]
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels, rotation=45)
+
+    return ax
+
+def create_scatter_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit):
+    """Create an enhanced scatter plot with size variation"""
+    # Vary point sizes based on values
+    sizes = [50 + (v - min(values)) / (max(values) - min(values) + 0.001) * 100 for v in values]
+
+    scatter = ax.scatter(timestamps, values, c=values, s=sizes,
+                        cmap='viridis', alpha=0.7, edgecolors='white', linewidth=1)
+
+    # Add colorbar
+    cbar = plt.colorbar(scatter, ax=ax, shrink=0.8)
+    cbar.set_label(f'{key_name.title()} ({unit})', rotation=270, labelpad=20)
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=max(1, len(timestamps)//8)))
+
+    return ax
+
+def enhance_plot_styling(ax, values, key_name, device_name, unit, value_range, color_scheme):
+    """Apply enhanced styling to the plot"""
+    # Beautiful title with device name
+    title = f'{key_name.title()} - {device_name}'
+    ax.set_title(title, fontsize=18, fontweight='bold', pad=20,
+                color='#2C3E50')
+
+    # Enhanced axis labels
+    ax.set_xlabel('Time', fontsize=14, fontweight='bold', color='#34495E')
+    ylabel = f'{key_name.title()} ({unit})' if unit else key_name.title()
+    ax.set_ylabel(ylabel, fontsize=14, fontweight='bold', color='#34495E')
+
+    # Set appropriate y-axis limits
+    if value_range:
+        ax.set_ylim(value_range)
     elif values:
-        # For other data types, use dynamic range with some padding
         min_val, max_val = min(values), max(values)
-        padding = (max_val - min_val) * 0.1
-        plt.ylim(min_val - padding, max_val + padding)
-    
-    # Add statistics text
-    if values:
-        avg_value = np.mean(values)
-        min_value = np.min(values)
-        max_value = np.max(values)
-        
-        stats_text = f'Avg: {avg_value:.1f}{unit} | Min: {min_value:.1f}{unit} | Max: {max_value:.1f}{unit}'
-        plt.figtext(0.5, 0.02, stats_text, ha='center', fontsize=10, style='italic')
-    
+        padding = (max_val - min_val) * 0.1 if max_val != min_val else 1
+        ax.set_ylim(min_val - padding, max_val + padding)
+
+    # Beautiful grid
+    ax.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
+    ax.set_axisbelow(True)
+
+    # Enhanced spines
+    for spine in ax.spines.values():
+        spine.set_color('#BDC3C7')
+        spine.set_linewidth(1)
+
+    # Rotate x-axis labels for better readability
+    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
+
+    # Add legend if multiple elements
+    if ax.get_legend_handles_labels()[0]:
+        ax.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+
+def add_data_insights(fig, values, unit, color_scheme):
+    """Add statistical insights to the plot"""
+    if not values:
+        return
+
+    avg_value = np.mean(values)
+    min_value = np.min(values)
+    max_value = np.max(values)
+    std_value = np.std(values)
+
+    # Create insights text box
+    insights_text = (
+        f'📊 Data Insights:\n'
+        f'Average: {avg_value:.1f}{unit}\n'
+        f'Range: {min_value:.1f}{unit} - {max_value:.1f}{unit}\n'
+        f'Std Dev: {std_value:.1f}{unit}\n'
+        f'Data Points: {len(values)}'
+    )
+
+    # Add text box with insights
+    fig.text(0.02, 0.02, insights_text, fontsize=10,
+             bbox=dict(boxstyle="round,pad=0.5", facecolor=color_scheme['primary'],
+                      alpha=0.1, edgecolor=color_scheme['secondary']),
+             verticalalignment='bottom')
+
+def create_telemetry_plot(timestamps, values, device_id, key_name, save_dir, chart_type="bar"):
+    """Create a beautiful, enhanced visualization of telemetry values over time
+
+    Args:
+        timestamps: List of datetime objects
+        values: List of numeric values
+        device_id: Device identifier
+        key_name: Name of the telemetry key being plotted
+        save_dir: Directory to save the plot
+        chart_type: Type of chart to create ("line", "bar", "area", "scatter")
+
+    Returns:
+        str: Path to the saved plot file
+    """
+    # Get enhanced styling information
+    device_name = get_device_name(device_id)
+    color_scheme = get_color_scheme(key_name)
+    unit, value_range = get_unit_and_range(key_name)
+
+    # Create figure with enhanced styling
+    fig, ax = plt.subplots(figsize=(16, 10))
+    fig.patch.set_facecolor('#FAFAFA')
+    ax.set_facecolor('#FFFFFF')
+
+    # Create the appropriate chart type
+    if chart_type == "area":
+        create_area_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit)
+    elif chart_type == "scatter":
+        create_scatter_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit)
+    elif chart_type == "line":
+        create_line_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit)
+    else:  # default to enhanced bar chart
+        create_bar_chart(ax, timestamps, values, color_scheme, key_name, device_name, unit)
+
+    # Apply enhanced styling
+    enhance_plot_styling(ax, values, key_name, device_name, unit, value_range, color_scheme)
+
+    # Add data insights
+    add_data_insights(fig, values, unit, color_scheme)
+
+    # Add timestamp info
+    if timestamps:
+        time_range = f"From {timestamps[0].strftime('%Y-%m-%d %H:%M')} to {timestamps[-1].strftime('%Y-%m-%d %H:%M')}"
+        fig.text(0.98, 0.02, time_range, fontsize=9, ha='right', va='bottom',
+                style='italic', color='#7F8C8D')
+
     plt.tight_layout()
-    
-    # Save plot
-    filename = f'{key_name}_{chart_type}_{device_id}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.png'
-    
+
+    # Save with high quality and beautiful filename
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f'{key_name}_{chart_type}_{device_name.replace(" ", "_")}_{timestamp_str}.png'
+
     # Ensure save directory exists
     os.makedirs(save_dir, exist_ok=True)
-    
+
     filepath = os.path.join(save_dir, filename)
-    plt.savefig(filepath, dpi=300, bbox_inches='tight')
-    print(f"📊 {chart_type.title()} chart saved: {filepath}")
+    plt.savefig(filepath, dpi=300, bbox_inches='tight', facecolor='#FAFAFA',
+                edgecolor='none', pad_inches=0.2)
+
+    print(f"🎨 Beautiful {chart_type.title()} chart saved: {filepath}")
+    print(f"📊 Device: {device_name}")
+    print(f"📈 Data: {len(values)} points of {key_name} data")
+
     plt.close()
-    
     return filepath
 
 
@@ -180,12 +389,14 @@ def create_summary_stats(timestamps, values, device_id, key_name):
 
 def plot_latest_data(chart_type="bar"):
     """Find and plot the latest telemetry data file, then remove it
-    
+
     Args:
         chart_type: Type of chart to create ("line" or "bar")
     """
-    data_dir = "AI/data"
-    plots_dir = "AI/plots"
+    # Use relative paths that work regardless of working directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(script_dir, "data")
+    plots_dir = os.path.join(script_dir, "plots")
     
     # Find all JSON files in data directory (both old and new formats)
     json_files = glob.glob(os.path.join(data_dir, "*_data_*.json"))
@@ -243,12 +454,14 @@ def plot_data_file(json_filepath, plots_dir, chart_type="line"):
 
 def plot_all_data(chart_type="line"):
     """Plot all available telemetry data files and remove them after plotting
-    
+
     Args:
         chart_type: Type of chart to create ("line" or "bar")
     """
-    data_dir = "data"
-    plots_dir = "plots"
+    # Use relative paths that work regardless of working directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(script_dir, "data")
+    plots_dir = os.path.join(script_dir, "plots")
     
     # Find all JSON files in data directory (both old and new formats)
     json_files = glob.glob(os.path.join(data_dir, "*_data_*.json"))
@@ -288,10 +501,12 @@ def main(chart_type="line"):
     print()
     
     # Create plots directory if it doesn't exist
-    os.makedirs("plots", exist_ok=True)
-    
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    plots_dir = os.path.join(script_dir, "plots")
+    os.makedirs(plots_dir, exist_ok=True)
+
     # Check if we have any data files
-    data_dir = "data"
+    data_dir = os.path.join(script_dir, "data")
     if not os.path.exists(data_dir):
         print("❌ Data directory not found. Run fetch_battery_data.py first!")
         return

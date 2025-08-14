@@ -5,6 +5,25 @@
       <mat-icon>chat</mat-icon>
       <h1>ThingsBoard AI Assistant</h1>
     </div>
+    <div class="header-center">
+      <!-- Page Toggle Buttons -->
+      <div class="page-toggle">
+        <button
+          mat-button
+          [class.active]="currentPage === 'chat'"
+          (click)="switchToChat()">
+          <mat-icon>chat</mat-icon>
+          Information
+        </button>
+        <button
+          mat-button
+          [class.active]="currentPage === 'visualize'"
+          (click)="switchToVisualize()">
+          <mat-icon>bar_chart</mat-icon>
+          Visualize
+        </button>
+      </div>
+    </div>
     <div class="header-right">
       <div class="status-indicator" [class]="dbStatus?.connected ? 'connected' : 'disconnected'">
         <mat-icon>storage</mat-icon>
@@ -18,8 +37,8 @@
     </div>
   </div>
 
-  <!-- Main Chat Area -->
-  <div class="chat-main">
+  <!-- Information Page (Original Chat) -->
+  <div *ngIf="currentPage === 'chat'" class="chat-main">
     <!-- Welcome Screen -->
     <div *ngIf="messages.length === 0" class="welcome-screen">
       <div class="welcome-content">
@@ -138,6 +157,121 @@
         (click)="clearChat()">
         Clear Chat
       </button>
+    </div>
+  </div>
+
+  <!-- Visualize Page -->
+  <div *ngIf="currentPage === 'visualize'" class="visualize-main">
+
+    <!-- Welcome Screen for Visualizer -->
+    <div *ngIf="visualizeMessages.length === 0" class="visualize-welcome-screen">
+      <div class="welcome-content">
+        <h2>📊 AI Data Visualization</h2>
+        <p>Ask me to create charts and visualizations from your IoT data!</p>
+
+        <div class="sample-questions">
+          <h3>Try these examples:</h3>
+          <div class="questions-grid">
+            <button
+              *ngFor="let question of visualizeSampleQuestions"
+              mat-stroked-button
+              class="sample-question"
+              (click)="setVisualizeSampleQuestion(question)">
+              {{ question }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages Container for Visualizer -->
+    <div
+      #visualizeMessagesContainer
+      class="visualize-messages-container"
+      [class.has-messages]="visualizeMessages.length > 0">
+
+      <div *ngFor="let message of visualizeMessages" class="message" [class]="message.type + '-message'">
+        <div class="message-content">
+          <div class="message-text">{{ message.content }}</div>
+
+          <!-- Display plot if available -->
+          <div *ngIf="message.plotUrl" class="plot-container">
+            <img [src]="message.plotUrl" alt="Generated Plot" class="plot-image" />
+          </div>
+
+          <!-- Display details if available -->
+          <div *ngIf="message.details" class="message-details">
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>info</mat-icon>
+                  Details
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <div class="details-content">
+                <div *ngIf="message.details.device_selected">
+                  <strong>Device:</strong> {{ message.details.device_selected }}
+                </div>
+                <div *ngIf="message.details.parameters_extracted">
+                  <strong>Parameters:</strong>
+                  <pre>{{ message.details.parameters_extracted | json }}</pre>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </div>
+
+          <div class="message-time">{{ formatTime(message.timestamp) }}</div>
+        </div>
+      </div>
+
+      <!-- Loading indicator for visualizer -->
+      <div *ngIf="visualizeLoading" class="loading-message">
+        <div class="loading-content">
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Generating visualization...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area for Visualizer -->
+    <div class="visualize-footer">
+      <!-- Error banner -->
+      <div *ngIf="visualizeError" class="error-banner">
+        <mat-icon>error</mat-icon>
+        <span>{{ visualizeError }}</span>
+      </div>
+
+      <div class="input-container">
+        <mat-form-field appearance="outline" class="input-field">
+          <mat-label>Ask for a visualization...</mat-label>
+          <textarea
+            #visualizeMessageInput
+            matInput
+            [(ngModel)]="visualizeInputValue"
+            (keydown)="onVisualizerKeyPress($event)"
+            [disabled]="visualizeLoading"
+            placeholder="e.g., Show me battery data for the last 7 days"
+            rows="2">
+          </textarea>
+        </mat-form-field>
+
+        <button
+          mat-fab
+          color="primary"
+          (click)="sendVisualizationMessage()"
+          [disabled]="!visualizeInputValue.trim() || visualizeLoading">
+          <mat-icon>send</mat-icon>
+        </button>
+
+        <button
+          *ngIf="visualizeMessages.length > 0"
+          mat-icon-button
+          class="clear-button"
+          (click)="clearVisualizerMessages()"
+          matTooltip="Clear conversation">
+          <mat-icon>clear_all</mat-icon>
+        </button>
+      </div>
     </div>
   </div>
 

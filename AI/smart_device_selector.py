@@ -140,8 +140,7 @@ def ai_select_device_and_params(prompt, devices_list, model):
     
     devices_text = "\n".join(devices_summary)
     
-    analysis_prompt = f"""
-You are an intelligent device selector for an IoT dashboard. Based on the user's request, select the most appropriate device and parameters.
+    analysis_prompt = f"""You are an intelligent device selector for an IoT dashboard. Based on the user's request, select the most appropriate device and parameters.
 
 Available devices:
 {devices_text}
@@ -151,29 +150,47 @@ User request: "{prompt}"
 Your task:
 1. Select the most appropriate device based on the request
 2. Choose the best telemetry key(s) from that device
-3. Determine the chart type (line or bar)
-4. Extract any time range if mentioned
-
-Respond with ONLY a JSON object in this format:
-{{
-    "device_id": "FULL_DEVICE_ID_EXACTLY_AS_SHOWN",
-    "device_name": "device_name_here", 
-    "keys": "telemetry_key_or_comma_separated_keys",
-    "chart_type": "line_or_bar",
-    "days_back": number_or_null,
-    "confidence": "high_medium_low",
-    "reasoning": "brief_explanation"
-}}
+3. Determine the chart type (line, bar, area, or scatter)
+4. Extract any time range if mentioned (support hours, days, and specific time ranges)
 
 IMPORTANT: Use the EXACT Full_ID from the device list above. Do not abbreviate or modify the device_id.
 
 Selection rules:
 - For temperature requests, prefer devices with "temperature" keys
-- For humidity requests, prefer devices with "humidity" keys  
+- For humidity requests, prefer devices with "humidity" keys
 - For battery requests, prefer devices with "battery" or "batteryLevel" keys
 - For general "data" requests, use the first available device
-- Default chart type is "line" unless specifically requested
-- Only include days_back if time range is mentioned
+- Chart type options: "line" (default), "bar", "area", "scatter"
+- Use "area" for trends, "scatter" for correlation analysis, "bar" for discrete data
+
+Time Range Examples:
+- "last hour" -> hours_back: 1
+- "last 3 hours" -> hours_back: 3
+- "last day" -> days_back: 1
+- "last 7 days" -> days_back: 7
+- "yesterday from 11 to 13" -> specific_day_offset: 1, start_hour: 11, end_hour: 13
+- "7 days ago from hour 9 to 17" -> specific_day_offset: 7, start_hour: 9, end_hour: 17
+- "today from 8 to 12" -> specific_day_offset: 0, start_hour: 8, end_hour: 12
+- "this day" -> specific_day_offset: 0
+
+Set only the relevant time_range fields, leave others as null
+
+Respond with ONLY a JSON object in this format:
+{{
+    "device_id": "FULL_DEVICE_ID_EXACTLY_AS_SHOWN",
+    "device_name": "device_name_here",
+    "keys": "telemetry_key_or_comma_separated_keys",
+    "chart_type": "line_bar_area_or_scatter",
+    "time_range": {{
+        "hours_back": null,
+        "days_back": null,
+        "specific_day_offset": null,
+        "start_hour": null,
+        "end_hour": null
+    }},
+    "confidence": "high_medium_low",
+    "reasoning": "brief_explanation"
+}}
 
 JSON Response:"""
 
@@ -203,6 +220,32 @@ JSON Response:"""
         print(f"❌ Error in AI device selection: {e}")
         return None
 
+def format_time_range_description(time_range):
+    """Format time range for display"""
+    if not time_range:
+        return "Not specified"
+
+    parts = []
+
+    if time_range.get('hours_back'):
+        parts.append(f"Last {time_range['hours_back']} hour(s)")
+    elif time_range.get('days_back'):
+        parts.append(f"Last {time_range['days_back']} day(s)")
+
+    if time_range.get('specific_day_offset') is not None:
+        offset = time_range['specific_day_offset']
+        if offset == 0:
+            parts.append("Today")
+        elif offset == 1:
+            parts.append("Yesterday")
+        else:
+            parts.append(f"{offset} days ago")
+
+    if time_range.get('start_hour') is not None and time_range.get('end_hour') is not None:
+        parts.append(f"from {time_range['start_hour']:02d}:00 to {time_range['end_hour']:02d}:00")
+
+    return " ".join(parts) if parts else "Not specified"
+
 def smart_device_selection(prompt):
     """Main function to intelligently select device and parameters"""
     print("🧠 Smart Device Selection")
@@ -218,7 +261,7 @@ def smart_device_selection(prompt):
             return None
         
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('models/gemini-1.5-flash')
+        model = genai.GenerativeModel('models/gemini-2.0-flash-lite')
     except Exception as e:
         print(f"❌ Could not initialize AI model: {e}")
         return None
@@ -277,22 +320,31 @@ def smart_device_selection(prompt):
         print(f"   Available: {', '.join(available_keys)}")
         return None
     
+    # Handle both old and new time range formats for backward compatibility
+    time_range = selection.get('time_range', {})
+    if not time_range and selection.get('days_back'):
+        # Convert old format to new format
+        time_range = {'days_back': selection.get('days_back')}
+
     final_selection = {
         'device_id': selection['device_id'],
         'device_name': selection['device_name'],
         'keys': ','.join(valid_keys),
         'chart_type': selection.get('chart_type', 'line'),
-        'days_back': selection.get('days_back'),
+        'time_range': time_range,
         'confidence': selection.get('confidence', 'medium')
     }
-    
+
     print("✅ Device selection successful!")
     print(f"📱 Selected: {final_selection['device_name']}")
     print(f"🆔 Device ID: {final_selection['device_id']}")
     print(f"🔑 Keys: {final_selection['keys']}")
     print(f"📊 Chart: {final_selection['chart_type']}")
-    if final_selection['days_back']:
-        print(f"📅 Time range: Last {final_selection['days_back']} days")
+
+    # Display time range information
+    if time_range:
+        time_desc = format_time_range_description(time_range)
+        print(f"📅 Time range: {time_desc}")
     
     return final_selection
 
@@ -301,7 +353,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         test_prompt = " ".join(sys.argv[1:])
     else:
-        test_prompt = "Show me the temperature for the last 7 days"
+        test_prompt = "Show me the battery level for the last 7 days"
     
     result = smart_device_selection(test_prompt)
     if result:

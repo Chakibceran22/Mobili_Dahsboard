@@ -12,7 +12,9 @@ import json
 import subprocess
 import re
 import sys
-from flask import Flask, request, jsonify
+import glob
+from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
 import google.generativeai as genai
 
 # Add current directory to path for imports
@@ -28,6 +30,23 @@ except ImportError as e:
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Configure CORS to allow requests from ThingsBoard UI
+# More permissive CORS configuration for development
+CORS(app,
+     origins=["*"],  # Allow all origins for now
+     methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+     allow_headers=["*"],  # Allow all headers
+     supports_credentials=True)
+
+# Additional manual CORS headers as backup
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 # Configure Gemini API
 # You need to set your API key as an environment variable
@@ -46,7 +65,7 @@ except Exception as e:
 # Initialize the model
 try:
     # Use Gemini Flash model (fastest and most reliable)
-    model = genai.GenerativeModel('models/gemini-1.5-flash')
+    model = genai.GenerativeModel('models/gemini-2.0-flash-lite')
     print("✅ models/gemini-1.5-flash model loaded successfully")
 except Exception as e:
     print(f"❌ Error loading Gemini Flash model: {e}")
@@ -57,8 +76,10 @@ def is_pipeline_request(prompt):
     Use AI model to intelligently determine if user wants to run the device pipeline
     """
     if not model:
-        # Fallback: simple keyword check if model not available
-        return any(word in prompt.lower() for word in ['pipeline', 'run', 'execute', 'fetch', 'data'])
+        # Fallback: more comprehensive keyword check if model not available
+        keywords = ['pipeline', 'run', 'execute', 'fetch', 'data', 'plot', 'chart', 'show', 'display',
+                   'battery', 'temperature', 'humidity', 'visualize', 'graph', 'create']
+        return any(word in prompt.lower() for word in keywords)
     
     try:
         analysis_prompt = f"""
@@ -66,7 +87,7 @@ You are an intelligent assistant that determines if a user wants to execute a de
 
 The device pipeline:
 - Fetches telemetry data from IoT devices
-- Creates charts and visualizations 
+- Creates charts and visualizations
 - Handles data like battery level, temperature, humidity
 - Generates line charts or bar charts
 - Can fetch data for specific time periods
@@ -75,14 +96,26 @@ User prompt: "{prompt}"
 
 Respond with ONLY "YES" if the user wants to execute the device pipeline, or "NO" if they want something else.
 
-Examples:
+Examples that should return YES:
 - "Run the device pipeline" → YES
 - "Fetch battery data" → YES
 - "Create a chart of temperature data" → YES
 - "Show me device telemetry" → YES
+- "Plot the battery for the last day" → YES
+- "Show me temperature" → YES
+- "Display humidity data" → YES
+- "Graph the battery levels" → YES
+- "Visualize sensor data" → YES
+- "Get device data" → YES
+- "Chart the temperature readings" → YES
+- "Plot sensor values" → YES
+
+Examples that should return NO:
 - "Hello how are you" → NO
 - "What's the weather" → NO
 - "Tell me a joke" → NO
+- "What time is it" → NO
+- "How do I configure ThingsBoard" → NO
 
 Response:"""
 
@@ -95,33 +128,85 @@ Response:"""
         
     except Exception as e:
         print(f"❌ Error in AI pipeline detection: {e}")
-        # Fallback to simple keyword check
-        return any(word in prompt.lower() for word in ['pipeline', 'run', 'execute', 'fetch', 'data'])
+        # Fallback to comprehensive keyword check
+        keywords = ['pipeline', 'run', 'execute', 'fetch', 'data', 'plot', 'chart', 'show', 'display',
+                   'battery', 'temperature', 'humidity', 'visualize', 'graph', 'create']
+        return any(word in prompt.lower() for word in keywords)
+
+def format_time_range_for_display(time_range):
+    """Format time range for display in chatbot"""
+    if not time_range:
+        return "Not specified"
+
+    if time_range.get('hours_back'):
+        return f"Last {time_range['hours_back']} hour(s)"
+    elif time_range.get('days_back'):
+        return f"Last {time_range['days_back']} day(s)"
+    elif time_range.get('specific_day_offset') is not None:
+        offset = time_range['specific_day_offset']
+        start_hour = time_range.get('start_hour', 0)
+        end_hour = time_range.get('end_hour', 23)
+
+        if offset == 0:
+            day_desc = "Today"
+        elif offset == 1:
+            day_desc = "Yesterday"
+        else:
+            day_desc = f"{offset} days ago"
+
+        if start_hour != 0 or end_hour != 23:
+            return f"{day_desc} from {start_hour:02d}:00 to {end_hour:02d}:59"
+        else:
+            return day_desc
+
+    return "Custom range"
 
 def extract_pipeline_params(prompt):
     """
     Use smart device selector to intelligently choose device and parameters
     """
     print("🧠 Using smart device selection...")
-    
+
     # Try to use smart device selection if available
     if smart_device_selection:
         try:
             selection = smart_device_selection(prompt)
             if selection:
                 # Convert smart selector output to pipeline parameters
+                # Ensure we capture all available parameters from smart selector
                 params = {
                     'device_id': selection['device_id'],
                     'keys': selection['keys'],
-                    'chart_type': selection['chart_type']
+                    'chart_type': selection.get('chart_type', 'line')  # Default to line if not specified
                 }
-                print(params)
-                
-                if selection.get('days_back'):
-                    params['days_back'] = selection['days_back']
-                
+
+                # Handle time range parameters (new format)
+                if selection.get('time_range'):
+                    params['time_range'] = selection['time_range']
+                elif selection.get('days_back'):
+                    # Convert legacy days_back to new format for backward compatibility
+                    params['time_range'] = {'days_back': selection['days_back']}
+
+                # Store additional metadata for better logging and debugging (separate from pipeline params)
+                metadata = {
+                    'device_name': selection.get('device_name', 'Unknown Device'),
+                    'confidence': selection.get('confidence', 'medium')
+                }
+
+                # Combine params with metadata for return (but keep pipeline params clean)
+                full_params = {**params, **metadata}
+
+                print(f"📋 Extracted parameters from smart selector:")
+                print(f"   🆔 Device ID: {params['device_id']}")
+                print(f"   📱 Device Name: {metadata['device_name']}")
+                print(f"   🔑 Keys: {params['keys']}")
+                print(f"   📊 Chart Type: {params['chart_type']}")
+                if params.get('days_back'):
+                    print(f"   📅 Days Back: {params['days_back']}")
+                print(f"   🎯 Confidence: {metadata['confidence']}")
+
                 print(f"✅ Smart selection successful: {selection['device_name']}")
-                return params
+                return full_params
             else:
                 print("⚠️  Smart selection failed, using fallback")
         except Exception as e:
@@ -200,10 +285,19 @@ def execute_device_pipeline(params=None):
     Execute the device_pipeline.py script with optional parameters
     """
     try:
-        script_path = os.path.join(os.path.dirname(__file__), 'device_pipeline.py')
-        cmd = ['python3', script_path]
-        
-        # Add parameters if provided
+        # Execute from root directory using relative path
+        script_path = 'AI/device_pipeline.py'
+
+        # Use the virtual environment python if available
+        venv_python = os.path.join(os.path.dirname(__file__), '..', 'venv', 'bin', 'python3')
+        if os.path.exists(venv_python):
+            cmd = [venv_python, script_path]
+            print(f"🐍 Using virtual environment python: {venv_python}")
+        else:
+            cmd = ['python3', script_path]
+            print(f"🐍 Using system python3")
+
+        # Add parameters if provided - ensure we use all parameters from smart selector
         if params:
             if 'device_id' in params:
                 cmd.extend(['-d', params['device_id']])
@@ -211,45 +305,111 @@ def execute_device_pipeline(params=None):
                 cmd.extend(['-t', params['chart_type']])
             if 'keys' in params:
                 cmd.extend(['-k', params['keys']])
-            if 'days_back' in params:
-                cmd.extend(['-b', str(params['days_back'])])
-        
-        print(f"HSAYAYAYYAYAYAY: {' '.join(cmd)}")
-        print(f"🚀 Executing: {' '.join(cmd)}")
-        
-        # Execute the pipeline
+
+            # Handle time range parameters
+            if 'time_range' in params and params['time_range']:
+                time_range = params['time_range']
+                if time_range.get('hours_back'):
+                    cmd.extend(['--hours', str(time_range['hours_back'])])
+                elif time_range.get('days_back'):
+                    cmd.extend(['-b', str(time_range['days_back'])])
+                elif time_range.get('specific_day_offset') is not None:
+                    # Use JSON format for complex time ranges
+                    import json
+                    cmd.extend(['--time-range', json.dumps(time_range)])
+
+        print(f"🚀 Executing device pipeline with smart selector parameters:")
+        print(f"   Command: {' '.join(cmd)}")
+        if params:
+            print(f"   � Device: {params.get('device_name', 'Unknown')} ({params.get('device_id', 'No ID')[:8]}...)")
+            print(f"   🔑 Keys: {params.get('keys', 'No keys')}")
+            print(f"   📊 Chart: {params.get('chart_type', 'line')}")
+
+            # Display time range information
+            if params.get('time_range'):
+                time_desc = format_time_range_for_display(params['time_range'])
+                print(f"   📅 Time Range: {time_desc}")
+
+            print(f"   🎯 Confidence: {params.get('confidence', 'unknown')}")
+
+        print(f"🔧 DEBUG: Full command being executed:")
+        print(f"   {' '.join(cmd)}")
+
+        # Get the root directory (parent of AI directory)
+        root_dir = os.path.dirname(os.path.dirname(__file__))
+        print(f"🔧 DEBUG: Working directory: {root_dir}")
+        print(f"🔧 DEBUG: Script path exists: {os.path.exists(os.path.join(root_dir, script_path))}")
+
+        # Execute the pipeline from root directory
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=120  # 2 minute timeout
+            timeout=120,  # 2 minute timeout
+            cwd=root_dir  # Execute from root directory
         )
-        
+
+        print(f"🔧 DEBUG: Pipeline execution completed")
+        print(f"   Return code: {result.returncode}")
+        print(f"   STDOUT: {result.stdout[:500] if result.stdout else 'No stdout'}")
+        print(f"   STDERR: {result.stderr[:500] if result.stderr else 'No stderr'}")
+
         if result.returncode == 0:
             success_message = 'Device pipeline executed successfully! 📊'
             details = 'Data fetched and charts generated. Check the plots/ folder for visualizations.'
-            
-            # Add device info if available
-            if params and 'device_id' in params:
-                details += f"\n🆔 Device: {params.get('device_id')[:8]}..."
+
+            # Find the most recent plot file
+            plot_url = None
+            try:
+                plots_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plots')
+                if os.path.exists(plots_dir):
+                    # Get all PNG files in plots directory
+                    plot_files = glob.glob(os.path.join(plots_dir, '*.png'))
+                    if plot_files:
+                        # Get the most recent plot file
+                        latest_plot = max(plot_files, key=os.path.getctime)
+                        plot_filename = os.path.basename(latest_plot)
+                        plot_url = f"http://192.168.0.101:8003/plots/{plot_filename}"
+                        print(f"📊 Generated plot URL: {plot_url}")
+            except Exception as e:
+                print(f"⚠️  Could not determine plot URL: {e}")
+
+            # Add detailed device info if available from smart selector
+            if params:
+                if 'device_name' in params:
+                    details += f"\n📱 Device: {params['device_name']}"
+                if 'device_id' in params:
+                    details += f"\n🆔 Device ID: {params['device_id'][:8]}..."
                 if 'keys' in params:
-                    details += f"\n🔑 Data: {params['keys']}"
+                    details += f"\n🔑 Data Keys: {params['keys']}"
                 if 'chart_type' in params:
-                    details += f"\n📊 Chart: {params['chart_type']}"
-            
-            return {
+                    details += f"\n📊 Chart Type: {params['chart_type']}"
+                if 'time_range' in params:
+                    time_desc = format_time_range_for_display(params['time_range'])
+                    details += f"\n📅 Time Range: {time_desc}"
+                if 'confidence' in params:
+                    details += f"\n🎯 AI Confidence: {params['confidence']}"
+
+            response = {
                 'success': True,
                 'message': success_message,
                 'details': details,
                 'output': result.stdout.strip() if result.stdout else None,
                 'params_used': params
             }
+
+            # Add plot URL if available
+            if plot_url:
+                response['plot_url'] = plot_url
+
+            return response
         else:
             return {
                 'success': False,
                 'message': 'Pipeline execution failed ❌',
                 'error': result.stderr.strip() if result.stderr else 'Unknown error',
-                'output': result.stdout.strip() if result.stdout else None
+                'output': result.stdout.strip() if result.stdout else None,
+                'params_used': params
             }
             
     except subprocess.TimeoutExpired:
@@ -318,6 +478,21 @@ def health():
         "timestamp": "2025-08-13"
     })
 
+@app.route('/plots/<filename>', methods=['GET'])
+def serve_plot(filename):
+    """Serve generated plot images"""
+    try:
+        plots_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plots')
+        file_path = os.path.join(plots_dir, filename)
+
+        # Security check - ensure file is in plots directory and is a PNG
+        if not os.path.exists(file_path) or not filename.endswith('.png'):
+            return jsonify({"error": "Plot not found"}), 404
+
+        return send_file(file_path, mimetype='image/png')
+    except Exception as e:
+        return jsonify({"error": f"Error serving plot: {str(e)}"}), 500
+
 @app.route('/chat', methods=['POST'])
 def chat():
     """Main chat endpoint that accepts prompts and returns AI responses or executes pipeline"""
@@ -345,22 +520,55 @@ def chat():
         # Check if this is a pipeline execution request
         if is_pipeline_request(user_prompt):
             print("🔍 Detected pipeline request")
-            
-            # Extract parameters from the prompt
+
+            # Extract parameters from the prompt using smart device selector
             params = extract_pipeline_params(user_prompt)
-            print(f"📋 Extracted parameters: {params}")
-            
-            # Execute the device pipeline
+            print(f"📋 Final extracted parameters: {params}")
+
+            # Validate that we have the minimum required parameters
+            if not params or 'device_id' not in params:
+                return jsonify({
+                    "status": "parameter_extraction_failed",
+                    "user_prompt": user_prompt,
+                    "response": "❌ Could not determine which device to use for your request",
+                    "details": "The smart device selector was unable to match your request to an available device. Please try being more specific about the device or data type you want.",
+                    "model": "smart_device_selector"
+                }), 400
+
+            # Execute the device pipeline with smart selector parameters
             result = execute_device_pipeline(params)
-            
-            return jsonify({
+
+            # Enhanced response with smart selector information
+            response_data = {
                 "status": "pipeline_executed" if result['success'] else "pipeline_failed",
                 "user_prompt": user_prompt,
                 "response": result['message'],
                 "details": result.get('details', ''),
                 "pipeline_result": result,
-                "model": "device_pipeline_executor"
-            })
+                "model": "smart_device_selector + device_pipeline_executor",
+                # Flatten the important fields for frontend compatibility
+                "success": result['success'],
+                "message": result['message']
+            }
+
+            # Add plot_url if available
+            if 'plot_url' in result:
+                response_data['plot_url'] = result['plot_url']
+
+            # Add smart selector metadata to response
+            if params:
+                response_data["smart_selector_info"] = {
+                    "device_selected": params.get('device_name', 'Unknown'),
+                    "confidence": params.get('confidence', 'unknown'),
+                    "parameters_extracted": {
+                        "device_id": params.get('device_id', 'None')[:8] + "..." if params.get('device_id') else 'None',
+                        "keys": params.get('keys', 'None'),
+                        "chart_type": params.get('chart_type', 'None'),
+                        "time_range": format_time_range_for_display(params.get('time_range', {})) if params.get('time_range') else 'None'
+                    }
+                }
+
+            return jsonify(response_data)
         
         else:
             # Not a pipeline request - return standard response
@@ -407,9 +615,9 @@ def main():
     """Main function to start the device pipeline chatbot server"""
     print("🤖 Starting AI-Powered Device Pipeline Chatbot")
     print("=" * 50)
-    print("📡 Server will run on: http://localhost:8003")
-    print("💬 Chat endpoint: http://localhost:8003/chat")
-    print("🔍 Health check: http://localhost:8003/health")
+    print("📡 Server will run on: http://192.168.0.101:8003")
+    print("💬 Chat endpoint: http://192.168.0.101:8003/chat")
+    print("🔍 Health check: http://192.168.0.101:8003/health")
     print()
     print("🎯 This chatbot can:")
     print("  • Use AI to intelligently detect pipeline requests")
