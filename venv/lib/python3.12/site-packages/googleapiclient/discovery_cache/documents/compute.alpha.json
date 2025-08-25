@@ -7653,6 +7653,52 @@
 },
 "haControllers": {
 "methods": {
+"delete": {
+"description": "Deletes an HaController in the specified project.",
+"flatPath": "projects/{project}/regions/{region}/haControllers/{haController}",
+"httpMethod": "DELETE",
+"id": "compute.haControllers.delete",
+"parameterOrder": [
+"project",
+"region",
+"haController"
+],
+"parameters": {
+"haController": {
+"description": "Name of the HaController resource to delete.",
+"location": "path",
+"required": true,
+"type": "string"
+},
+"project": {
+"description": "Project ID for this request.",
+"location": "path",
+"pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+"required": true,
+"type": "string"
+},
+"region": {
+"description": "Name of the region for this request.",
+"location": "path",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+"required": true,
+"type": "string"
+},
+"requestId": {
+"description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.",
+"location": "query",
+"type": "string"
+}
+},
+"path": "projects/{project}/regions/{region}/haControllers/{haController}",
+"response": {
+"$ref": "Operation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/compute"
+]
+},
 "failover": {
 "description": "Fails over a VM targeted by the specified HaController to the selected zone.",
 "flatPath": "projects/{project}/regions/{region}/haControllers/{haController}/failover",
@@ -7694,6 +7740,210 @@
 "path": "projects/{project}/regions/{region}/haControllers/{haController}/failover",
 "request": {
 "$ref": "HaControllersFailoverRequest"
+},
+"response": {
+"$ref": "Operation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/compute"
+]
+},
+"get": {
+"description": "Returns all the details of a specific HaController.",
+"flatPath": "projects/{project}/regions/{region}/haControllers/{haController}",
+"httpMethod": "GET",
+"id": "compute.haControllers.get",
+"parameterOrder": [
+"project",
+"region",
+"haController"
+],
+"parameters": {
+"haController": {
+"description": "Name of the HaController resource to return.",
+"location": "path",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+"required": true,
+"type": "string"
+},
+"project": {
+"description": "Project ID for this request.",
+"location": "path",
+"pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+"required": true,
+"type": "string"
+},
+"region": {
+"description": "Name of the region for this request.",
+"location": "path",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+"required": true,
+"type": "string"
+}
+},
+"path": "projects/{project}/regions/{region}/haControllers/{haController}",
+"response": {
+"$ref": "HaController"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/compute",
+"https://www.googleapis.com/auth/compute.readonly"
+]
+},
+"insert": {
+"description": "Creates HaController in the specified project.",
+"flatPath": "projects/{project}/regions/{region}/haControllers",
+"httpMethod": "POST",
+"id": "compute.haControllers.insert",
+"parameterOrder": [
+"project",
+"region"
+],
+"parameters": {
+"project": {
+"description": "Project ID for this request.",
+"location": "path",
+"pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+"required": true,
+"type": "string"
+},
+"region": {
+"description": "Name of the region for this request.",
+"location": "path",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+"required": true,
+"type": "string"
+},
+"requestId": {
+"description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.",
+"location": "query",
+"type": "string"
+}
+},
+"path": "projects/{project}/regions/{region}/haControllers",
+"request": {
+"$ref": "HaController"
+},
+"response": {
+"$ref": "Operation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/compute"
+]
+},
+"list": {
+"description": "Lists all HaControllers in the specified project in the specified region.",
+"flatPath": "projects/{project}/regions/{region}/haControllers",
+"httpMethod": "GET",
+"id": "compute.haControllers.list",
+"parameterOrder": [
+"project",
+"region"
+],
+"parameters": {
+"filter": {
+"description": "A filter expression that filters resources listed in the response. Most Compute resources support two types of filter expressions: expressions that support regular expressions and expressions that follow API improvement proposal AIP-160. These two types of filter expressions cannot be mixed in one request. If you want to use AIP-160, your expression must specify the field name, an operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=` or `:`. For example, if you are filtering Compute Engine instances, you can exclude instances named `example-instance` by specifying `name != example-instance`. The `:*` comparison can be used to test whether a key has been defined. For example, to find all objects with `owner` label use: ``` labels.owner:* ``` You can also filter nested fields. For example, you could specify `scheduling.automaticRestart = false` to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels. To filter on multiple expressions, provide each separate expression within parentheses. For example: ``` (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\") ``` By default, each expression is an `AND` expression. However, you can include `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true) ``` If you want to use a regular expression, use the `eq` (equal) or `ne` (not equal) operator against a single un-parenthesized expression with or without quotes or against multiple parenthesized expressions. Examples: `fieldname eq unquoted literal` `fieldname eq 'single quoted literal'` `fieldname eq \"double quoted literal\"` `(fieldname1 eq literal) (fieldname2 ne \"literal\")` The literal value is interpreted as a regular expression using Google RE2 library syntax. The literal value must match the entire field. For example, to filter for instances that do not end with name \"instance\", you would use `name ne .*instance`. You cannot combine constraints on multiple fields using regular expressions.",
+"location": "query",
+"type": "string"
+},
+"maxResults": {
+"default": "500",
+"description": "The maximum number of results per page that should be returned. If the number of available results is larger than `maxResults`, Compute Engine returns a `nextPageToken` that can be used to get the next page of results in subsequent list requests. Acceptable values are `0` to `500`, inclusive. (Default: `500`)",
+"format": "uint32",
+"location": "query",
+"minimum": "0",
+"type": "integer"
+},
+"orderBy": {
+"description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name. You can also sort results in descending order based on the creation timestamp using `orderBy=\"creationTimestamp desc\"`. This sorts results based on the `creationTimestamp` field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first. Currently, only sorting by `name` or `creationTimestamp desc` is supported.",
+"location": "query",
+"type": "string"
+},
+"pageToken": {
+"description": "Specifies a page token to use. Set `pageToken` to the `nextPageToken` returned by a previous list request to get the next page of results.",
+"location": "query",
+"type": "string"
+},
+"project": {
+"description": "Project ID for this request.",
+"location": "path",
+"pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+"required": true,
+"type": "string"
+},
+"region": {
+"description": "Name of the region for this request.",
+"location": "path",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+"required": true,
+"type": "string"
+},
+"returnPartialSuccess": {
+"description": "Opt-in for partial success behavior which provides partial results in case of failure. The default value is false. For example, when partial success behavior is enabled, aggregatedList for a single zone scope either returns all resources in the zone or no resources, with an error code.",
+"location": "query",
+"type": "boolean"
+}
+},
+"path": "projects/{project}/regions/{region}/haControllers",
+"response": {
+"$ref": "HaControllersList"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/compute",
+"https://www.googleapis.com/auth/compute.readonly"
+]
+},
+"patch": {
+"description": "Updates HaController in the specified project.",
+"flatPath": "projects/{project}/regions/{region}/haControllers/{haController}",
+"httpMethod": "PATCH",
+"id": "compute.haControllers.patch",
+"parameterOrder": [
+"project",
+"region",
+"haController"
+],
+"parameters": {
+"haController": {
+"description": "ID of the HaController resource to update.",
+"location": "path",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+"required": true,
+"type": "string"
+},
+"project": {
+"description": "Project ID for this request.",
+"location": "path",
+"pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+"required": true,
+"type": "string"
+},
+"region": {
+"description": "Name of the region for this request.",
+"location": "path",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+"required": true,
+"type": "string"
+},
+"requestId": {
+"description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.",
+"location": "query",
+"type": "string"
+},
+"updateMask": {
+"description": "update_mask indicates fields to be updated as part of this request.",
+"format": "google-fieldmask",
+"location": "query",
+"type": "string"
+}
+},
+"path": "projects/{project}/regions/{region}/haControllers/{haController}",
+"request": {
+"$ref": "HaController"
 },
 "response": {
 "$ref": "Operation"
@@ -28898,6 +29148,72 @@
 },
 "regionHealthAggregationPolicies": {
 "methods": {
+"aggregatedList": {
+"description": "Retrieves the list of all HealthAggregationPolicy resources, regional and global, available to the specified project. To prevent failure, Google recommends that you set the `returnPartialSuccess` parameter to `true`.",
+"flatPath": "projects/{project}/aggregated/healthAggregationPolicies",
+"httpMethod": "GET",
+"id": "compute.regionHealthAggregationPolicies.aggregatedList",
+"parameterOrder": [
+"project"
+],
+"parameters": {
+"filter": {
+"description": "A filter expression that filters resources listed in the response. Most Compute resources support two types of filter expressions: expressions that support regular expressions and expressions that follow API improvement proposal AIP-160. These two types of filter expressions cannot be mixed in one request. If you want to use AIP-160, your expression must specify the field name, an operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=` or `:`. For example, if you are filtering Compute Engine instances, you can exclude instances named `example-instance` by specifying `name != example-instance`. The `:*` comparison can be used to test whether a key has been defined. For example, to find all objects with `owner` label use: ``` labels.owner:* ``` You can also filter nested fields. For example, you could specify `scheduling.automaticRestart = false` to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels. To filter on multiple expressions, provide each separate expression within parentheses. For example: ``` (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\") ``` By default, each expression is an `AND` expression. However, you can include `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true) ``` If you want to use a regular expression, use the `eq` (equal) or `ne` (not equal) operator against a single un-parenthesized expression with or without quotes or against multiple parenthesized expressions. Examples: `fieldname eq unquoted literal` `fieldname eq 'single quoted literal'` `fieldname eq \"double quoted literal\"` `(fieldname1 eq literal) (fieldname2 ne \"literal\")` The literal value is interpreted as a regular expression using Google RE2 library syntax. The literal value must match the entire field. For example, to filter for instances that do not end with name \"instance\", you would use `name ne .*instance`. You cannot combine constraints on multiple fields using regular expressions.",
+"location": "query",
+"type": "string"
+},
+"includeAllScopes": {
+"description": "Indicates whether every visible scope for each scope type (zone, region, global) should be included in the response. For new resource types added after this field, the flag has no effect as new resource types will always include every visible scope for each scope type in response. For resource types which predate this field, if this flag is omitted or false, only scopes of the scope types where the resource type is expected to be found will be included.",
+"location": "query",
+"type": "boolean"
+},
+"maxResults": {
+"default": "500",
+"description": "The maximum number of results per page that should be returned. If the number of available results is larger than `maxResults`, Compute Engine returns a `nextPageToken` that can be used to get the next page of results in subsequent list requests. Acceptable values are `0` to `500`, inclusive. (Default: `500`)",
+"format": "uint32",
+"location": "query",
+"minimum": "0",
+"type": "integer"
+},
+"orderBy": {
+"description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name. You can also sort results in descending order based on the creation timestamp using `orderBy=\"creationTimestamp desc\"`. This sorts results based on the `creationTimestamp` field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first. Currently, only sorting by `name` or `creationTimestamp desc` is supported.",
+"location": "query",
+"type": "string"
+},
+"pageToken": {
+"description": "Specifies a page token to use. Set `pageToken` to the `nextPageToken` returned by a previous list request to get the next page of results.",
+"location": "query",
+"type": "string"
+},
+"project": {
+"description": "Name of the project scoping this request.",
+"location": "path",
+"pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+"required": true,
+"type": "string"
+},
+"returnPartialSuccess": {
+"description": "Opt-in for partial success behavior which provides partial results in case of failure. The default value is false. For example, when partial success behavior is enabled, aggregatedList for a single zone scope either returns all resources in the zone or no resources, with an error code.",
+"location": "query",
+"type": "boolean"
+},
+"serviceProjectNumber": {
+"description": "The Shared VPC service project id or service project number for which aggregated list request is invoked for subnetworks list-usable api.",
+"format": "int64",
+"location": "query",
+"type": "string"
+}
+},
+"path": "projects/{project}/aggregated/healthAggregationPolicies",
+"response": {
+"$ref": "HealthAggregationPolicyAggregatedList"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/compute",
+"https://www.googleapis.com/auth/compute.readonly"
+]
+},
 "delete": {
 "description": "Deletes the specified HealthAggregationPolicy in the given region.",
 "flatPath": "projects/{project}/regions/{region}/healthAggregationPolicies/{healthAggregationPolicy}",
@@ -38837,6 +39153,60 @@
 }
 },
 "path": "projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/{reservationSubBlock}/performMaintenance",
+"response": {
+"$ref": "Operation"
+},
+"scopes": [
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/compute"
+]
+},
+"reportFaulty": {
+"description": "Allows customers to report a faulty subBlock.",
+"flatPath": "projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/{reservationSubBlock}/reportFaulty",
+"httpMethod": "POST",
+"id": "compute.reservationSubBlocks.reportFaulty",
+"parameterOrder": [
+"project",
+"zone",
+"parentName",
+"reservationSubBlock"
+],
+"parameters": {
+"parentName": {
+"description": "The name of the parent reservation and parent block. In the format of reservations/{reservation_name}/reservationBlocks/{reservation_block_name}",
+"location": "path",
+"required": true,
+"type": "string"
+},
+"project": {
+"description": "Project ID for this request.",
+"location": "path",
+"required": true,
+"type": "string"
+},
+"requestId": {
+"description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+"location": "query",
+"type": "string"
+},
+"reservationSubBlock": {
+"description": "The name of the reservation subBlock. Name should conform to RFC1035 or be a resource ID.",
+"location": "path",
+"required": true,
+"type": "string"
+},
+"zone": {
+"description": "Name of the zone for this request. Zone name should conform to RFC1035.",
+"location": "path",
+"required": true,
+"type": "string"
+}
+},
+"path": "projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/{reservationSubBlock}/reportFaulty",
+"request": {
+"$ref": "ReservationSubBlocksReportFaultyRequest"
+},
 "response": {
 "$ref": "Operation"
 },
@@ -50770,7 +51140,7 @@
 }
 }
 },
-"revision": "20250728",
+"revision": "20250729",
 "rootUrl": "https://compute.googleapis.com/",
 "schemas": {
 "AWSV4Signature": {
@@ -52112,6 +52482,21 @@ false
 "description": "This reservation type is specified by total resource amounts (e.g. total count of CPUs) and can account for multiple instance SKUs. In other words, one can create instances of varying shapes against this reservation.",
 "id": "AllocationAggregateReservation",
 "properties": {
+"hostCount": {
+"description": "Count of reserved hosts of specified VM family. The host has fixed number of accelerators based on the accelerator/vm-family selected.",
+"format": "int32",
+"type": "integer"
+},
+"inUseHostCount": {
+"description": "Number of hosts currently in use. If there is one or more Instances running on the host, it is considered in use.",
+"format": "int32",
+"type": "integer"
+},
+"inUseInstanceCount": {
+"description": "Number of instances currently in use in this reservation.",
+"format": "int32",
+"type": "integer"
+},
 "inUseResources": {
 "description": "[Output only] List of resources currently in use.",
 "items": {
@@ -52135,9 +52520,11 @@ false
 "VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT6E",
 "VM_FAMILY_CLOUD_TPU_POD_SLICE_CT3P",
 "VM_FAMILY_CLOUD_TPU_POD_SLICE_CT4P",
-"VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P"
+"VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P",
+"VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X"
 ],
 "enumDescriptions": [
+"",
 "",
 "",
 "",
@@ -53650,12 +54037,14 @@ false
 "enum": [
 "CONNECTION",
 "CUSTOM_METRICS",
+"IN_FLIGHT",
 "RATE",
 "UTILIZATION"
 ],
 "enumDescriptions": [
 "Balance based on the number of simultaneous connections.",
 "Based on custom defined and reported metrics.",
+"Balance based on the number of in-flight requests.",
 "Balance based on requests per second (RPS).",
 "Balance based on the backend utilization."
 ],
@@ -53700,6 +54089,21 @@ false
 "format": "int32",
 "type": "integer"
 },
+"maxInFlightRequests": {
+"description": "Defines a maximum number of in-flight requests for the whole NEG or instance group. Not available if backend's balancingMode is RATE or CONNECTION.",
+"format": "int32",
+"type": "integer"
+},
+"maxInFlightRequestsPerEndpoint": {
+"description": "Defines a maximum number of in-flight requests for a single endpoint. Not available if backend's balancingMode is RATE or CONNECTION.",
+"format": "int32",
+"type": "integer"
+},
+"maxInFlightRequestsPerInstance": {
+"description": "Defines a maximum number of in-flight requests for a single VM. Not available if backend's balancingMode is RATE or CONNECTION.",
+"format": "int32",
+"type": "integer"
+},
 "maxRate": {
 "description": "Defines a maximum number of HTTP requests per second (RPS). For usage guidelines, see Rate balancing mode and Utilization balancing mode. Not available if the backend's balancingMode is CONNECTION.",
 "format": "int32",
@@ -53731,6 +54135,19 @@ false
 "No preference.",
 "If preference is unspecified, we set it to the DEFAULT value",
 "Traffic will be sent to this backend first."
+],
+"type": "string"
+},
+"trafficDuration": {
+"enum": [
+"LONG",
+"SHORT",
+"TRAFFIC_DURATION_UNSPECIFIED"
+],
+"enumDescriptions": [
+"Most of the requests are expected to take more than multiple seconds to finish.",
+"Most requests are expected to finish with a sub-second latency.",
+"Traffic duration is unspecified."
 ],
 "type": "string"
 }
@@ -56697,7 +57114,7 @@ false
 "id": "CapacityAdviceResponse",
 "properties": {
 "recommendations": {
-"description": "Initially the API will provide one recommendation which balances the individual scores according to Google's preference.",
+"description": "Initially the API will provide one recommendation which balances the individual scores according to service provider's preference.",
 "items": {
 "$ref": "CapacityAdviceResponseRecommendation"
 },
@@ -60624,6 +61041,10 @@ false
 "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
 "type": "string"
 },
+"params": {
+"$ref": "ExternalVpnGatewayParams",
+"description": "Input only. [Input Only] Additional params passed with the request, but not persisted as part of resource payload."
+},
 "redundancyType": {
 "description": "Indicates the user-supplied redundancy type of this external VPN gateway.",
 "enum": [
@@ -60818,6 +61239,19 @@ false
 "type": "string"
 }
 },
+"type": "object"
+}
+},
+"type": "object"
+},
+"ExternalVpnGatewayParams": {
+"id": "ExternalVpnGatewayParams",
+"properties": {
+"resourceManagerTags": {
+"additionalProperties": {
+"type": "string"
+},
+"description": "Tag keys/values directly bound to this resource. Tag keys and values have the same definition as resource manager tags. The field is allowed for INSERT only. The keys/values to set on the resource should be specified in either ID { : } or Namespaced format { : }. For example the following are valid inputs: * {\"tagKeys/333\" : \"tagValues/444\", \"tagKeys/123\" : \"tagValues/456\"} * {\"123/environment\" : \"production\", \"345/abc\" : \"xyz\"} Note: * Invalid combinations of ID & namespaced format is not supported. For instance: {\"123/environment\" : \"tagValues/444\"} is invalid. * Inconsistent format is not supported. For instance: {\"tagKeys/333\" : \"tagValues/444\", \"123/env\" : \"prod\"} is invalid.",
 "type": "object"
 }
 },
@@ -62868,6 +63302,20 @@ false
 ],
 "type": "string"
 },
+"protectionTier": {
+"description": "Protection tier for the workload.",
+"enum": [
+"CAPACITY_OPTIMIZED",
+"PROTECTION_TIER_UNSPECIFIED",
+"STANDARD"
+],
+"enumDescriptions": [
+"CAPACITY_OPTIMIZED capacity leverages redundancies (e.g. power, cooling) at the data center during normal operating conditions. In the event of infrastructure failures at data center (e.g. power and/or cooling failures), this workload may be disrupted. As a consequence, it has a weaker availability SLO than STANDARD.",
+"Unspecified protection tier.",
+"STANDARD protection for workload that should be protected by redundancies (e.g. power, cooling) at the data center level. In the event of infrastructure failures at data center (e.g. power and/or cooling failures), this workload is expected to continue as normal using the redundancies."
+],
+"type": "string"
+},
 "reservationMode": {
 "description": "The reservation mode which determines reservation-termination behavior and expected pricing.",
 "enum": [
@@ -63786,9 +64234,11 @@ false
 "VM_FAMILY_CLOUD_TPU_LITE_POD_SLICE_CT6E",
 "VM_FAMILY_CLOUD_TPU_POD_SLICE_CT3P",
 "VM_FAMILY_CLOUD_TPU_POD_SLICE_CT4P",
-"VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P"
+"VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P",
+"VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X"
 ],
 "enumDescriptions": [
+"",
 "",
 "",
 "",
@@ -64482,6 +64932,378 @@ false
 },
 "type": "object"
 },
+"HaController": {
+"description": "HaController handles failover for a VM Instance.",
+"id": "HaController",
+"properties": {
+"creationTimestamp": {
+"description": "[Output Only] Creation timestamp in RFC3339 text format.",
+"type": "string"
+},
+"description": {
+"description": "An optional description of this resource. Provide this property when you create the resource.",
+"type": "string"
+},
+"failoverInitiation": {
+"description": "Indicates how failover should be initiated.",
+"enum": [
+"FAILOVER_INITIATION_UNSPECIFIED",
+"MANUAL_ONLY"
+],
+"enumDescriptions": [
+"",
+"Failover will be initiated only when compute.haControllers.failover method is called."
+],
+"type": "string"
+},
+"id": {
+"description": "[Output Only] The unique identifier for the resource. This identifier is defined by the server.",
+"format": "uint64",
+"type": "string"
+},
+"instanceName": {
+"description": "Name of the instance that HaController is in charge of. If not specified the HaController's resource name will be used instead. The name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+"type": "string"
+},
+"kind": {
+"default": "compute#HaController",
+"description": "[Output Only] Type of the resource. Always compute#haController for HaControllers.",
+"type": "string"
+},
+"name": {
+"description": "Name of the resource. Provided by the client when the resource is created. The name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
+"pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+"type": "string"
+},
+"region": {
+"description": "[Output Only] URL of the region where the resource resides. You must specify this field as part of the HTTP request URL. It is not settable as a field in the request body.",
+"type": "string"
+},
+"secondaryZoneCapacity": {
+"description": "Indicates the capacity guarantees in the secondary zone.",
+"enum": [
+"BEST_EFFORT",
+"SECONDARY_ZONE_CAPACITY_UNSPECIFIED"
+],
+"enumDescriptions": [
+"Failover will succeed only if at the time of failover the secondary zone has enough capacity to host the instance.",
+""
+],
+"type": "string"
+},
+"selfLink": {
+"description": "[Output only] Server-defined URL for the resource.",
+"type": "string"
+},
+"selfLinkWithId": {
+"description": "[Output Only] Server-defined URL for this resource with the resource id.",
+"type": "string"
+},
+"status": {
+"$ref": "HaControllerStatus",
+"description": "[Output Only] Status information for the HaController resource."
+},
+"zoneConfigurations": {
+"additionalProperties": {
+"$ref": "HaControllerZoneConfiguration"
+},
+"description": "Map of zone configurations Key: name of the zone Value: ZoneConfiguration",
+"type": "object"
+}
+},
+"type": "object"
+},
+"HaControllerStatus": {
+"description": "Contains information about current status of the HaController.",
+"id": "HaControllerStatus",
+"properties": {
+"failoverProgress": {
+"$ref": "HaControllerStatusFailoverProgress",
+"description": "[Output Only] Contains the details of the ongoing failover. This message is not displayed if failover is NOT in progress."
+},
+"ongoingFailover": {
+"description": "[Output Only] Indicates if the failover is currently in-progress.",
+"type": "boolean"
+},
+"primaryInstance": {
+"description": "[Output Only] The URL to the instance that is intended to be primary at this moment. Primary instance will be changed at the very beginning of a failover operation.",
+"type": "string"
+},
+"primaryZone": {
+"description": "[Output Only] The name of the zone that is intended to be primary at this moment. Primary zone will be changed at the very beginning of a failover operation. The zone may not be operational in the middle of a failover operation.",
+"type": "string"
+},
+"readyForFailover": {
+"description": "[Output Only] Indicates if the resource is ready for initiating a failover to the secondary zone.",
+"type": "boolean"
+},
+"zoneStatus": {
+"additionalProperties": {
+"$ref": "HaControllerStatusZoneStatus"
+},
+"description": "[Output Only] Map of zone statuses. Key: name of the zone Value: ZoneStatus",
+"type": "object"
+}
+},
+"type": "object"
+},
+"HaControllerStatusFailoverProgress": {
+"description": "Contains information about the current failover operation.",
+"id": "HaControllerStatusFailoverProgress",
+"properties": {
+"failoverTrigger": {
+"description": "[Output Only] Indicates if failover has been triggered automatically or manually.",
+"enum": [
+"AUTOMATIC",
+"FAILOVER_TRIGGER_UNSPECIFIED",
+"MANUAL"
+],
+"enumDescriptions": [
+"Failover has been triggered automatically.",
+"",
+"Failover has been triggered manually."
+],
+"type": "string"
+},
+"failoverTriggerTimestamp": {
+"description": "[Output Only] Timestamp of the last failover trigger.",
+"format": "google-datetime",
+"type": "string"
+},
+"lastFailoverAttempt": {
+"$ref": "HaControllerStatusFailoverProgressLastFailoverAttempt",
+"description": "[Output Only] Contains details of the last failed failover. This field is filled only if the current failover is failing"
+}
+},
+"type": "object"
+},
+"HaControllerStatusFailoverProgressLastFailoverAttempt": {
+"id": "HaControllerStatusFailoverProgressLastFailoverAttempt",
+"properties": {
+"errors": {
+"description": "[Output Only] Encountered errors during the last attempt to process failover.",
+"properties": {
+"errors": {
+"description": "[Output Only] The array of errors encountered while processing this operation.",
+"items": {
+"properties": {
+"code": {
+"description": "[Output Only] The error type identifier for this error.",
+"type": "string"
+},
+"errorDetails": {
+"description": "[Output Only] An optional list of messages that contain the error details. There is a set of defined message types to use for providing details.The syntax depends on the error code. For example, QuotaExceededInfo will have details when the error code is QUOTA_EXCEEDED.",
+"items": {
+"properties": {
+"errorInfo": {
+"$ref": "ErrorInfo"
+},
+"help": {
+"$ref": "Help"
+},
+"localizedMessage": {
+"$ref": "LocalizedMessage"
+},
+"quotaInfo": {
+"$ref": "QuotaExceededInfo"
+}
+},
+"type": "object"
+},
+"type": "array"
+},
+"location": {
+"description": "[Output Only] Indicates the field in the request that caused the error. This property is optional.",
+"type": "string"
+},
+"message": {
+"description": "[Output Only] An optional, human-readable error message.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"timestamp": {
+"description": "[Output Only] Show timestamp only if there is an error. RFC3339 text format.",
+"format": "google-datetime",
+"type": "string"
+}
+},
+"type": "object"
+},
+"HaControllerStatusZoneStatus": {
+"description": "Contains the status of a specific zone.",
+"id": "HaControllerStatusZoneStatus",
+"properties": {
+"isPrimary": {
+"description": "[Output Only] Indicates if the zone is primary at this moment.",
+"type": "boolean"
+},
+"isZoneReady": {
+"description": "[Output Only] Indicates if the zone is ready for initiating a failover.",
+"type": "boolean"
+},
+"lastError": {
+"$ref": "HaControllerStatusZoneStatusLastError",
+"description": "[Output Only] This field is filled only if the current operation is failing."
+}
+},
+"type": "object"
+},
+"HaControllerStatusZoneStatusLastError": {
+"description": "Contains details of the last failed operation.",
+"id": "HaControllerStatusZoneStatusLastError",
+"properties": {
+"errors": {
+"description": "[Output Only] Encountered errors.",
+"properties": {
+"errors": {
+"description": "[Output Only] The array of errors encountered while processing this operation.",
+"items": {
+"properties": {
+"code": {
+"description": "[Output Only] The error type identifier for this error.",
+"type": "string"
+},
+"errorDetails": {
+"description": "[Output Only] An optional list of messages that contain the error details. There is a set of defined message types to use for providing details.The syntax depends on the error code. For example, QuotaExceededInfo will have details when the error code is QUOTA_EXCEEDED.",
+"items": {
+"properties": {
+"errorInfo": {
+"$ref": "ErrorInfo"
+},
+"help": {
+"$ref": "Help"
+},
+"localizedMessage": {
+"$ref": "LocalizedMessage"
+},
+"quotaInfo": {
+"$ref": "QuotaExceededInfo"
+}
+},
+"type": "object"
+},
+"type": "array"
+},
+"location": {
+"description": "[Output Only] Indicates the field in the request that caused the error. This property is optional.",
+"type": "string"
+},
+"message": {
+"description": "[Output Only] An optional, human-readable error message.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"timestamp": {
+"description": "[Output Only] Show timestamp only if there is an error. RFC3339 text format.",
+"format": "google-datetime",
+"type": "string"
+}
+},
+"type": "object"
+},
+"HaControllerZoneConfiguration": {
+"description": "Config for a zone that the HaController may use for running the VM instance.",
+"id": "HaControllerZoneConfiguration",
+"properties": {
+"nodeAffinities": {
+"description": "A set of node affinity configurations. Refer to Configuring node affinity for more information. Overrides reservationAffinity.",
+"items": {
+"$ref": "HaControllerZoneConfigurationNodeAffinity"
+},
+"type": "array"
+},
+"reservationAffinity": {
+"$ref": "HaControllerZoneConfigurationReservationAffinity",
+"description": "Specifies the reservations that the instance can consume from."
+}
+},
+"type": "object"
+},
+"HaControllerZoneConfigurationNodeAffinity": {
+"description": "Node Affinity: the configuration of desired nodes onto which the Instance could be scheduled. This message should be an exact copy of the Instances representation of NodeAffinity. LINT.IfChange(HaControllerNodeAffinityMixer)",
+"id": "HaControllerZoneConfigurationNodeAffinity",
+"properties": {
+"key": {
+"description": "Corresponds to the label key of Node resource.",
+"type": "string"
+},
+"operator": {
+"description": "Defines the operation of node selection. Valid operators are IN for affinity and NOT_IN for anti-affinity.",
+"enum": [
+"IN",
+"NOT_IN",
+"OPERATOR_UNSPECIFIED"
+],
+"enumDescriptions": [
+"Requires Compute Engine to seek for matched nodes.",
+"Requires Compute Engine to avoid certain nodes.",
+""
+],
+"type": "string"
+},
+"values": {
+"description": "Corresponds to the label values of Node resource.",
+"items": {
+"type": "string"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"HaControllerZoneConfigurationReservationAffinity": {
+"description": "Specifies the reservations that this instance can consume from. This message should be an exact copy of the Instances representation of AllocationAffinity. LINT.IfChange(HaControllerAllocationAffinityMixer)",
+"id": "HaControllerZoneConfigurationReservationAffinity",
+"properties": {
+"consumeReservationType": {
+"description": "Specifies the type of reservation from which this instance can consume resources: ANY_RESERVATION (default), SPECIFIC_RESERVATION, or NO_RESERVATION. See Consuming reserved instances for examples.",
+"enum": [
+"ANY_RESERVATION",
+"NO_RESERVATION",
+"SPECIFIC_RESERVATION",
+"SPECIFIC_THEN_ANY_RESERVATION",
+"SPECIFIC_THEN_NO_RESERVATION",
+"UNSPECIFIED"
+],
+"enumDescriptions": [
+"Consume any allocation available.",
+"Do not consume from any allocated capacity.",
+"Must consume from a specific reservation. Must specify key value fields for specifying the reservations.",
+"Prefer to consume from a specific reservation, but still consume any reservation available if the specified reservation is not available or exhausted. Must specify key value fields for specifying the reservations.",
+"Prefer to consume from a specific reservation, but still consume from the on-demand pool if the specified reservation is exhausted. Must specify key value fields for specifying the reservations.",
+""
+],
+"type": "string"
+},
+"key": {
+"description": "Corresponds to the label key of a reservation resource. To target a SPECIFIC_RESERVATION by name, specify googleapis.com/reservation-name as the key and specify the name of your reservation as its value.",
+"type": "string"
+},
+"values": {
+"description": "Corresponds to the label values of a reservation resource. This can be either a name to a reservation in the same project or \"projects/different-project/reservations/some-reservation-name\" to target a shared reservation in the same zone but in a different project.",
+"items": {
+"type": "string"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
 "HaControllersFailoverRequest": {
 "id": "HaControllersFailoverRequest",
 "properties": {
@@ -64489,6 +65311,302 @@ false
 "description": "Name of the destination zone for the failover.",
 "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
 "type": "string"
+}
+},
+"type": "object"
+},
+"HaControllersList": {
+"id": "HaControllersList",
+"properties": {
+"etag": {
+"type": "string"
+},
+"id": {
+"description": "Unique identifier for the resource; defined by the server.",
+"type": "string"
+},
+"items": {
+"description": "A list of HaControllers in the specified project and region.",
+"items": {
+"$ref": "HaController"
+},
+"type": "array"
+},
+"nextPageToken": {
+"description": "This token allows you to get the next page of results for maxResults, use the nextPageToken as a value for the query parameter pageToken in the next list request. Subsequent list requests will have their own nextPageToken to continue paging through the results.",
+"type": "string"
+},
+"selfLink": {
+"description": "[Output only] Server-defined URL for this resource.",
+"type": "string"
+},
+"unreachables": {
+"description": "[Output only] Unreachable resources.",
+"items": {
+"type": "string"
+},
+"type": "array"
+},
+"warning": {
+"description": "Informational warning message.",
+"properties": {
+"code": {
+"description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
+"enum": [
+"CLEANUP_FAILED",
+"DEPRECATED_RESOURCE_USED",
+"DEPRECATED_TYPE_USED",
+"DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
+"EXPERIMENTAL_TYPE_USED",
+"EXTERNAL_API_WARNING",
+"FIELD_VALUE_OVERRIDEN",
+"INJECTED_KERNELS_DEPRECATED",
+"INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB",
+"LARGE_DEPLOYMENT_WARNING",
+"LIST_OVERHEAD_QUOTA_EXCEED",
+"MISSING_TYPE_DEPENDENCY",
+"NEXT_HOP_ADDRESS_NOT_ASSIGNED",
+"NEXT_HOP_CANNOT_IP_FORWARD",
+"NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE",
+"NEXT_HOP_INSTANCE_NOT_FOUND",
+"NEXT_HOP_INSTANCE_NOT_ON_NETWORK",
+"NEXT_HOP_NOT_RUNNING",
+"NOT_CRITICAL_ERROR",
+"NO_RESULTS_ON_PAGE",
+"PARTIAL_SUCCESS",
+"QUOTA_INFO_UNAVAILABLE",
+"REQUIRED_TOS_AGREEMENT",
+"RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING",
+"RESOURCE_NOT_DELETED",
+"SCHEMA_VALIDATION_IGNORED",
+"SINGLE_INSTANCE_PROPERTY_TEMPLATE",
+"UNDECLARED_PROPERTIES",
+"UNREACHABLE"
+],
+"enumDeprecated": [
+false,
+false,
+false,
+false,
+false,
+false,
+true,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false
+],
+"enumDescriptions": [
+"Warning about failed cleanup of transient changes made by a failed operation.",
+"A link to a deprecated resource was created.",
+"When deploying and at least one of the resources has a type marked as deprecated",
+"The user created a boot disk that is larger than image size.",
+"When deploying and at least one of the resources has a type marked as experimental",
+"Warning that is present in an external api call",
+"Warning that value of a field has been overridden. Deprecated unused field.",
+"The operation involved use of an injected kernel, which is deprecated.",
+"A WEIGHTED_MAGLEV backend service is associated with a health check that is not of type HTTP/HTTPS/HTTP2.",
+"When deploying a deployment with a exceedingly large number of resources",
+"Resource can't be retrieved due to list overhead quota exceed which captures the amount of resources filtered out by user-defined list filter.",
+"A resource depends on a missing type",
+"The route's nextHopIp address is not assigned to an instance on the network.",
+"The route's next hop instance cannot ip forward.",
+"The route's nextHopInstance URL refers to an instance that does not have an ipv6 interface on the same network as the route.",
+"The route's nextHopInstance URL refers to an instance that does not exist.",
+"The route's nextHopInstance URL refers to an instance that is not on the same network as the route.",
+"The route's next hop instance does not have a status of RUNNING.",
+"Error which is not critical. We decided to continue the process despite the mentioned error.",
+"No results are present on a particular list page.",
+"Success is reported, but some results may be missing due to errors",
+"Quota information is not available to client requests (e.g: regions.list).",
+"The user attempted to use a resource that requires a TOS they have not accepted.",
+"Warning that a resource is in use.",
+"One or more of the resources set to auto-delete could not be deleted because they were in use.",
+"When a resource schema validation is ignored.",
+"Instance template used in instance group manager is valid as such, but its application does not make a lot of sense, because it allows only single instance in instance group.",
+"When undeclared properties in the schema are present",
+"A given scope cannot be reached."
+],
+"type": "string"
+},
+"data": {
+"description": "[Output Only] Metadata about this warning in key: value format. For example: \"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" } ",
+"items": {
+"properties": {
+"key": {
+"description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding).",
+"type": "string"
+},
+"value": {
+"description": "[Output Only] A warning data value corresponding to the key.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"type": "array"
+},
+"message": {
+"description": "[Output Only] A human-readable description of the warning code.",
+"type": "string"
+}
+},
+"type": "object"
+}
+},
+"type": "object"
+},
+"HealthAggregationPoliciesScopedList": {
+"id": "HealthAggregationPoliciesScopedList",
+"properties": {
+"healthAggregationPolicies": {
+"description": "A list of HealthAggregationPolicys contained in this scope.",
+"items": {
+"$ref": "HealthAggregationPolicy"
+},
+"type": "array"
+},
+"warning": {
+"description": "Informational warning which replaces the list of health aggregation policies when the list is empty.",
+"properties": {
+"code": {
+"description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
+"enum": [
+"CLEANUP_FAILED",
+"DEPRECATED_RESOURCE_USED",
+"DEPRECATED_TYPE_USED",
+"DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
+"EXPERIMENTAL_TYPE_USED",
+"EXTERNAL_API_WARNING",
+"FIELD_VALUE_OVERRIDEN",
+"INJECTED_KERNELS_DEPRECATED",
+"INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB",
+"LARGE_DEPLOYMENT_WARNING",
+"LIST_OVERHEAD_QUOTA_EXCEED",
+"MISSING_TYPE_DEPENDENCY",
+"NEXT_HOP_ADDRESS_NOT_ASSIGNED",
+"NEXT_HOP_CANNOT_IP_FORWARD",
+"NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE",
+"NEXT_HOP_INSTANCE_NOT_FOUND",
+"NEXT_HOP_INSTANCE_NOT_ON_NETWORK",
+"NEXT_HOP_NOT_RUNNING",
+"NOT_CRITICAL_ERROR",
+"NO_RESULTS_ON_PAGE",
+"PARTIAL_SUCCESS",
+"QUOTA_INFO_UNAVAILABLE",
+"REQUIRED_TOS_AGREEMENT",
+"RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING",
+"RESOURCE_NOT_DELETED",
+"SCHEMA_VALIDATION_IGNORED",
+"SINGLE_INSTANCE_PROPERTY_TEMPLATE",
+"UNDECLARED_PROPERTIES",
+"UNREACHABLE"
+],
+"enumDeprecated": [
+false,
+false,
+false,
+false,
+false,
+false,
+true,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false
+],
+"enumDescriptions": [
+"Warning about failed cleanup of transient changes made by a failed operation.",
+"A link to a deprecated resource was created.",
+"When deploying and at least one of the resources has a type marked as deprecated",
+"The user created a boot disk that is larger than image size.",
+"When deploying and at least one of the resources has a type marked as experimental",
+"Warning that is present in an external api call",
+"Warning that value of a field has been overridden. Deprecated unused field.",
+"The operation involved use of an injected kernel, which is deprecated.",
+"A WEIGHTED_MAGLEV backend service is associated with a health check that is not of type HTTP/HTTPS/HTTP2.",
+"When deploying a deployment with a exceedingly large number of resources",
+"Resource can't be retrieved due to list overhead quota exceed which captures the amount of resources filtered out by user-defined list filter.",
+"A resource depends on a missing type",
+"The route's nextHopIp address is not assigned to an instance on the network.",
+"The route's next hop instance cannot ip forward.",
+"The route's nextHopInstance URL refers to an instance that does not have an ipv6 interface on the same network as the route.",
+"The route's nextHopInstance URL refers to an instance that does not exist.",
+"The route's nextHopInstance URL refers to an instance that is not on the same network as the route.",
+"The route's next hop instance does not have a status of RUNNING.",
+"Error which is not critical. We decided to continue the process despite the mentioned error.",
+"No results are present on a particular list page.",
+"Success is reported, but some results may be missing due to errors",
+"Quota information is not available to client requests (e.g: regions.list).",
+"The user attempted to use a resource that requires a TOS they have not accepted.",
+"Warning that a resource is in use.",
+"One or more of the resources set to auto-delete could not be deleted because they were in use.",
+"When a resource schema validation is ignored.",
+"Instance template used in instance group manager is valid as such, but its application does not make a lot of sense, because it allows only single instance in instance group.",
+"When undeclared properties in the schema are present",
+"A given scope cannot be reached."
+],
+"type": "string"
+},
+"data": {
+"description": "[Output Only] Metadata about this warning in key: value format. For example: \"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" } ",
+"items": {
+"properties": {
+"key": {
+"description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding).",
+"type": "string"
+},
+"value": {
+"description": "[Output Only] A warning data value corresponding to the key.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"type": "array"
+},
+"message": {
+"description": "[Output Only] A human-readable description of the warning code.",
+"type": "string"
+}
+},
+"type": "object"
 }
 },
 "type": "object"
@@ -64558,6 +65676,169 @@ false
 "selfLinkWithId": {
 "description": "[Output Only] Server-defined URL with id for the resource.",
 "type": "string"
+}
+},
+"type": "object"
+},
+"HealthAggregationPolicyAggregatedList": {
+"description": "Contains a list of HealthAggregationPoliciesScopedList.",
+"id": "HealthAggregationPolicyAggregatedList",
+"properties": {
+"id": {
+"description": "[Output Only] Unique identifier for the resource; defined by the server.",
+"type": "string"
+},
+"items": {
+"additionalProperties": {
+"$ref": "HealthAggregationPoliciesScopedList",
+"description": "Name of the scope containing this set of HealthAggregationPolicies."
+},
+"description": "A list of HealthAggregationPoliciesScopedList resources.",
+"type": "object"
+},
+"kind": {
+"default": "compute#healthAggregationPolicyAggregatedList",
+"description": "Type of resource.",
+"type": "string"
+},
+"nextPageToken": {
+"description": "[Output Only] This token allows you to get the next page of results for list requests. If the number of results is larger than maxResults, use the nextPageToken as a value for the query parameter pageToken in the next list request. Subsequent list requests will have their own nextPageToken to continue paging through the results.",
+"type": "string"
+},
+"selfLink": {
+"description": "[Output Only] Server-defined URL for this resource.",
+"type": "string"
+},
+"unreachables": {
+"description": "[Output Only] Unreachable resources.",
+"items": {
+"type": "string"
+},
+"type": "array"
+},
+"warning": {
+"description": "[Output Only] Informational warning message.",
+"properties": {
+"code": {
+"description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
+"enum": [
+"CLEANUP_FAILED",
+"DEPRECATED_RESOURCE_USED",
+"DEPRECATED_TYPE_USED",
+"DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
+"EXPERIMENTAL_TYPE_USED",
+"EXTERNAL_API_WARNING",
+"FIELD_VALUE_OVERRIDEN",
+"INJECTED_KERNELS_DEPRECATED",
+"INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB",
+"LARGE_DEPLOYMENT_WARNING",
+"LIST_OVERHEAD_QUOTA_EXCEED",
+"MISSING_TYPE_DEPENDENCY",
+"NEXT_HOP_ADDRESS_NOT_ASSIGNED",
+"NEXT_HOP_CANNOT_IP_FORWARD",
+"NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE",
+"NEXT_HOP_INSTANCE_NOT_FOUND",
+"NEXT_HOP_INSTANCE_NOT_ON_NETWORK",
+"NEXT_HOP_NOT_RUNNING",
+"NOT_CRITICAL_ERROR",
+"NO_RESULTS_ON_PAGE",
+"PARTIAL_SUCCESS",
+"QUOTA_INFO_UNAVAILABLE",
+"REQUIRED_TOS_AGREEMENT",
+"RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING",
+"RESOURCE_NOT_DELETED",
+"SCHEMA_VALIDATION_IGNORED",
+"SINGLE_INSTANCE_PROPERTY_TEMPLATE",
+"UNDECLARED_PROPERTIES",
+"UNREACHABLE"
+],
+"enumDeprecated": [
+false,
+false,
+false,
+false,
+false,
+false,
+true,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false,
+false
+],
+"enumDescriptions": [
+"Warning about failed cleanup of transient changes made by a failed operation.",
+"A link to a deprecated resource was created.",
+"When deploying and at least one of the resources has a type marked as deprecated",
+"The user created a boot disk that is larger than image size.",
+"When deploying and at least one of the resources has a type marked as experimental",
+"Warning that is present in an external api call",
+"Warning that value of a field has been overridden. Deprecated unused field.",
+"The operation involved use of an injected kernel, which is deprecated.",
+"A WEIGHTED_MAGLEV backend service is associated with a health check that is not of type HTTP/HTTPS/HTTP2.",
+"When deploying a deployment with a exceedingly large number of resources",
+"Resource can't be retrieved due to list overhead quota exceed which captures the amount of resources filtered out by user-defined list filter.",
+"A resource depends on a missing type",
+"The route's nextHopIp address is not assigned to an instance on the network.",
+"The route's next hop instance cannot ip forward.",
+"The route's nextHopInstance URL refers to an instance that does not have an ipv6 interface on the same network as the route.",
+"The route's nextHopInstance URL refers to an instance that does not exist.",
+"The route's nextHopInstance URL refers to an instance that is not on the same network as the route.",
+"The route's next hop instance does not have a status of RUNNING.",
+"Error which is not critical. We decided to continue the process despite the mentioned error.",
+"No results are present on a particular list page.",
+"Success is reported, but some results may be missing due to errors",
+"Quota information is not available to client requests (e.g: regions.list).",
+"The user attempted to use a resource that requires a TOS they have not accepted.",
+"Warning that a resource is in use.",
+"One or more of the resources set to auto-delete could not be deleted because they were in use.",
+"When a resource schema validation is ignored.",
+"Instance template used in instance group manager is valid as such, but its application does not make a lot of sense, because it allows only single instance in instance group.",
+"When undeclared properties in the schema are present",
+"A given scope cannot be reached."
+],
+"type": "string"
+},
+"data": {
+"description": "[Output Only] Metadata about this warning in key: value format. For example: \"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" } ",
+"items": {
+"properties": {
+"key": {
+"description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding).",
+"type": "string"
+},
+"value": {
+"description": "[Output Only] A warning data value corresponding to the key.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"type": "array"
+},
+"message": {
+"description": "[Output Only] A human-readable description of the warning code.",
+"type": "string"
+}
+},
+"type": "object"
 }
 },
 "type": "object"
@@ -80605,6 +81886,13 @@ false
 "MultiMigStatus": {
 "id": "MultiMigStatus",
 "properties": {
+"appliedAcceleratorTopologies": {
+"description": "[Output Only] The accelerator topology applied to this multi-MIG. Currently only one accelerator topology is supported.",
+"items": {
+"$ref": "MultiMigStatusAcceleratorTopology"
+},
+"type": "array"
+},
 "memberInstanceGroupManagers": {
 "items": {
 "type": "string"
@@ -80615,6 +81903,99 @@ false
 "description": "[Output Only] The number of instance group manager members in this multi-MIG.",
 "format": "int32",
 "type": "integer"
+}
+},
+"type": "object"
+},
+"MultiMigStatusAcceleratorTopology": {
+"id": "MultiMigStatusAcceleratorTopology",
+"properties": {
+"acceleratorTopology": {
+"description": "[Output Only] Topology in the format of: \"16x16\", \"4x4x4\", etc. The value is the same as configured in the WorkloadPolicy.",
+"type": "string"
+},
+"acceleratorTopologyState": {
+"description": "[Output Only] The state of the accelerator topology.",
+"enum": [
+"ACTIVATING",
+"ACTIVE",
+"ACTIVE_DEGRADED",
+"DEACTIVATING",
+"FAILED",
+"INCOMPLETE"
+],
+"enumDescriptions": [
+"The accelerator topology is being activated.",
+"The accelerator topology is active.",
+"The accelerator topology is active but operating in degraded mode.",
+"The accelerator topology is being deactivated.",
+"The accelerator topology failed.",
+"The configuration is incomplete and the accelerator topology cannot be activated due to insufficient number of running VMs."
+],
+"type": "string"
+},
+"acceleratorTopologyStateLastCheck": {
+"$ref": "MultiMigStatusAcceleratorTopologyAcceleratorTopologyStateLastCheck",
+"description": "[Output Only] The result of the latest accelerator topology state check."
+}
+},
+"type": "object"
+},
+"MultiMigStatusAcceleratorTopologyAcceleratorTopologyStateLastCheck": {
+"id": "MultiMigStatusAcceleratorTopologyAcceleratorTopologyStateLastCheck",
+"properties": {
+"error": {
+"description": "[Output Only] Encountered errors on the last state check.",
+"properties": {
+"errors": {
+"description": "[Output Only] The array of errors encountered while processing this operation.",
+"items": {
+"properties": {
+"code": {
+"description": "[Output Only] The error type identifier for this error.",
+"type": "string"
+},
+"errorDetails": {
+"description": "[Output Only] An optional list of messages that contain the error details. There is a set of defined message types to use for providing details.The syntax depends on the error code. For example, QuotaExceededInfo will have details when the error code is QUOTA_EXCEEDED.",
+"items": {
+"properties": {
+"errorInfo": {
+"$ref": "ErrorInfo"
+},
+"help": {
+"$ref": "Help"
+},
+"localizedMessage": {
+"$ref": "LocalizedMessage"
+},
+"quotaInfo": {
+"$ref": "QuotaExceededInfo"
+}
+},
+"type": "object"
+},
+"type": "array"
+},
+"location": {
+"description": "[Output Only] Indicates the field in the request that caused the error. This property is optional.",
+"type": "string"
+},
+"message": {
+"description": "[Output Only] An optional, human-readable error message.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"timestamp": {
+"description": "[Output Only] Timestamp is shown only if there is an error. The field has // RFC3339 // text format.",
+"format": "google-datetime",
+"type": "string"
 }
 },
 "type": "object"
@@ -83899,6 +85280,18 @@ false
 ],
 "type": "string"
 },
+"allowFirewallPolicy": {
+"description": "Specifies whether firewall policy can be attached to the network.",
+"enum": [
+"FIREWALL_POLICY_ALLOWED",
+"FIREWALL_POLICY_BLOCKED"
+],
+"enumDescriptions": [
+"",
+""
+],
+"type": "string"
+},
 "allowInterconnect": {
 "description": "Specifies whether Cloud Interconnect creation is allowed.",
 "enum": [
@@ -84043,6 +85436,18 @@ false
 ],
 "type": "string"
 },
+"allowVpcFirewallRules": {
+"description": "Specifies whether VPC firewall rules can be created under the network.",
+"enum": [
+"VPC_FIREWALL_RULES_ALLOWED",
+"VPC_FIREWALL_RULES_BLOCKED"
+],
+"enumDescriptions": [
+"",
+""
+],
+"type": "string"
+},
 "allowVpcPeering": {
 "description": "Specifies whether VPC peering is allowed.",
 "enum": [
@@ -84066,6 +85471,20 @@ false
 ""
 ],
 "type": "string"
+},
+"firewallPolicyTypes": {
+"items": {
+"enum": [
+"RDMA_ROCE_POLICY",
+"VPC_POLICY"
+],
+"enumDescriptions": [
+"",
+""
+],
+"type": "string"
+},
+"type": "array"
 },
 "interfaceTypes": {
 "description": "If set, limits the interface types that the network supports. If empty, all interface types are supported.",
@@ -95336,6 +96755,11 @@ false
 "format": "int32",
 "type": "integer"
 },
+"inUseHostCount": {
+"description": "Number of hosts currently in use. If there is one or more Instances running on the host, it is considered in use.",
+"format": "int32",
+"type": "integer"
+},
 "kind": {
 "default": "compute#reservationBlock",
 "description": "[Output Only] Type of the resource. Always compute#reservationBlock for reservation blocks.",
@@ -95832,6 +97256,11 @@ false
 "format": "int32",
 "type": "integer"
 },
+"inUseHostCount": {
+"description": "Number of hosts currently in use. If there is one or more Instances running on the host, it is considered in use.",
+"format": "int32",
+"type": "integer"
+},
 "kind": {
 "default": "compute#reservationSubBlock",
 "description": "[Output Only] Type of the resource. Always compute#reservationSubBlock for reservation subBlocks.",
@@ -96099,6 +97528,72 @@ false
 }
 },
 "type": "object"
+}
+},
+"type": "object"
+},
+"ReservationSubBlocksReportFaultyRequest": {
+"id": "ReservationSubBlocksReportFaultyRequest",
+"properties": {
+"disruptionSchedule": {
+"description": "The disruption schedule for the subBlock.",
+"enum": [
+"DISRUPTION_SCHEDULE_UNSPECIFIED",
+"IMMEDIATE"
+],
+"enumDescriptions": [
+"",
+"All VMs will be disrupted immediately."
+],
+"type": "string"
+},
+"failureComponent": {
+"description": "The component that experienced the fault.",
+"enum": [
+"FAILURE_COMPONENT_UNSPECIFIED",
+"MULTIPLE_FAULTY_HOSTS",
+"NVLINK_SWITCH"
+],
+"enumDescriptions": [
+"",
+"Multiple hosts experienced the fault.",
+"The NVLink switch experienced the fault."
+],
+"type": "string"
+},
+"faultReasons": {
+"description": "The reasons for the fault experienced with the subBlock.",
+"items": {
+"$ref": "ReservationSubBlocksReportFaultyRequestFaultReason"
+},
+"type": "array"
+}
+},
+"type": "object"
+},
+"ReservationSubBlocksReportFaultyRequestFaultReason": {
+"description": "The reason for the fault experienced with the subBlock.",
+"id": "ReservationSubBlocksReportFaultyRequestFaultReason",
+"properties": {
+"behavior": {
+"description": "The behavior of the fault experienced with the subBlock.",
+"enum": [
+"FAULT_BEHAVIOR_UNSPECIFIED",
+"GPU_ERROR",
+"PERFORMANCE",
+"SWITCH_FAILURE"
+],
+"enumDescriptions": [
+"",
+"The subBlock experienced a GPU error.",
+"The subBlock experienced performance issues.",
+"The subBlock experienced a switch failure."
+],
+"type": "string"
+},
+"description": {
+"description": "The description of the fault experienced with the subBlock.",
+"type": "string"
 }
 },
 "type": "object"
@@ -96561,7 +98056,8 @@ false
 "description": "Resource policy applicable to VMs for infrastructure maintenance."
 },
 "workloadPolicy": {
-"$ref": "ResourcePolicyWorkloadPolicy"
+"$ref": "ResourcePolicyWorkloadPolicy",
+"description": "Resource policy for defining instance placement for MIGs."
 }
 },
 "type": "object"
@@ -97260,9 +98756,11 @@ false
 "id": "ResourcePolicyWorkloadPolicy",
 "properties": {
 "acceleratorTopology": {
+"description": "Specifies the topology required to create a partition for VMs that have interconnected GPUs.",
 "type": "string"
 },
 "maxTopologyDistance": {
+"description": "Specifies the maximum distance between instances.",
 "enum": [
 "BLOCK",
 "CLUSTER",
@@ -97276,13 +98774,14 @@ false
 "type": "string"
 },
 "type": {
+"description": "Specifies the intent of the instance placement in the MIG.",
 "enum": [
 "HIGH_AVAILABILITY",
 "HIGH_THROUGHPUT"
 ],
 "enumDescriptions": [
-"VMs will be provisioned in such a way which provides high availability.",
-"VMs will be provisioned in such a way which provides high throughput."
+"MIG spreads out the instances as much as possible for high availability.",
+"MIG provisions instances as close to each other as possible for high throughput."
 ],
 "type": "string"
 }
@@ -97301,10 +98800,12 @@ false
 "type": "array"
 },
 "consumedReservation": {
+"deprecated": true,
 "description": "[Output Only] The full resource name of the reservation that this instance is consuming from.",
 "type": "string"
 },
 "consumedReservationBlock": {
+"deprecated": true,
 "description": "[Output Only] The full resource name of the reservation block that this instance is consuming from.",
 "type": "string"
 },
@@ -112151,6 +113652,10 @@ false
 "description": "URL of the network to which this VPN gateway is attached. Provided by the client when the VPN gateway is created.",
 "type": "string"
 },
+"params": {
+"$ref": "TargetVpnGatewayParams",
+"description": "Input only. [Input Only] Additional params passed with the request, but not persisted as part of resource payload."
+},
 "region": {
 "description": "[Output Only] URL of the region where the target VPN gateway resides. You must specify this field as part of the HTTP request URL. It is not settable as a field in the request body.",
 "type": "string"
@@ -112497,6 +114002,19 @@ false
 "type": "string"
 }
 },
+"type": "object"
+}
+},
+"type": "object"
+},
+"TargetVpnGatewayParams": {
+"id": "TargetVpnGatewayParams",
+"properties": {
+"resourceManagerTags": {
+"additionalProperties": {
+"type": "string"
+},
+"description": "Tag keys/values directly bound to this resource. Tag keys and values have the same definition as resource manager tags. The field is allowed for INSERT only. The keys/values to set on the resource should be specified in either ID { : } or Namespaced format { : }. For example the following are valid inputs: * {\"tagKeys/333\" : \"tagValues/444\", \"tagKeys/123\" : \"tagValues/456\"} * {\"123/environment\" : \"production\", \"345/abc\" : \"xyz\"} Note: * Invalid combinations of ID & namespaced format is not supported. For instance: {\"123/environment\" : \"tagValues/444\"} is invalid. * Inconsistent format is not supported. For instance: {\"tagKeys/333\" : \"tagValues/444\", \"123/env\" : \"prod\"} is invalid.",
 "type": "object"
 }
 },
@@ -114553,6 +116071,10 @@ false
 "description": "URL of the network to which this VPN gateway is attached. Provided by the client when the VPN gateway is created.",
 "type": "string"
 },
+"params": {
+"$ref": "VpnGatewayParams",
+"description": "Input only. [Input Only] Additional params passed with the request, but not persisted as part of resource payload."
+},
 "region": {
 "description": "[Output Only] URL of the region where the VPN gateway resides.",
 "type": "string"
@@ -114902,6 +116424,19 @@ false
 },
 "type": "object"
 },
+"VpnGatewayParams": {
+"id": "VpnGatewayParams",
+"properties": {
+"resourceManagerTags": {
+"additionalProperties": {
+"type": "string"
+},
+"description": "Tag keys/values directly bound to this resource. Tag keys and values have the same definition as resource manager tags. The field is allowed for INSERT only. The keys/values to set on the resource should be specified in either ID { : } or Namespaced format { : }. For example the following are valid inputs: * {\"tagKeys/333\" : \"tagValues/444\", \"tagKeys/123\" : \"tagValues/456\"} * {\"123/environment\" : \"production\", \"345/abc\" : \"xyz\"} Note: * Invalid combinations of ID & namespaced format is not supported. For instance: {\"123/environment\" : \"tagValues/444\"} is invalid. * Inconsistent format is not supported. For instance: {\"tagKeys/333\" : \"tagValues/444\", \"123/env\" : \"prod\"} is invalid.",
+"type": "object"
+}
+},
+"type": "object"
+},
 "VpnGatewayStatus": {
 "id": "VpnGatewayStatus",
 "properties": {
@@ -115224,6 +116759,10 @@ false
 "description": "Name of the resource. Provided by the client when the resource is created. The name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
 "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
 "type": "string"
+},
+"params": {
+"$ref": "VpnTunnelParams",
+"description": "Input only. [Input Only] Additional params passed with the request, but not persisted as part of resource payload."
 },
 "peerExternalGateway": {
 "description": "URL of the peer side external VPN gateway to which this VPN tunnel is connected. Provided by the client when the VPN tunnel is created. This field is exclusive with the field peerGcpGateway.",
@@ -115643,6 +117182,19 @@ false
 "type": "string"
 }
 },
+"type": "object"
+}
+},
+"type": "object"
+},
+"VpnTunnelParams": {
+"id": "VpnTunnelParams",
+"properties": {
+"resourceManagerTags": {
+"additionalProperties": {
+"type": "string"
+},
+"description": "Tag keys/values directly bound to this resource. Tag keys and values have the same definition as resource manager tags. The field is allowed for INSERT only. The keys/values to set on the resource should be specified in either ID { : } or Namespaced format { : }. For example the following are valid inputs: * {\"tagKeys/333\" : \"tagValues/444\", \"tagKeys/123\" : \"tagValues/456\"} * {\"123/environment\" : \"production\", \"345/abc\" : \"xyz\"} Note: * Invalid combinations of ID & namespaced format is not supported. For instance: {\"123/environment\" : \"tagValues/444\"} is invalid. * Inconsistent format is not supported. For instance: {\"tagKeys/333\" : \"tagValues/444\", \"123/env\" : \"prod\"} is invalid.",
 "type": "object"
 }
 },

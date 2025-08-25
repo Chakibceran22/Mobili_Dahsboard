@@ -52,7 +52,7 @@ export interface DataPoint {
   providedIn: 'root'
 })
 export class TimeseriesService {
-  private baseUrl = 'http://localhost:5002';
+  private baseUrl = 'http://192.168.0.1:5002';
 
   constructor(private http: HttpClient) { }
 

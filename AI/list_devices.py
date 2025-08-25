@@ -8,7 +8,7 @@ This script lists all devices in your ThingsBoard tenant to help you find the co
 import requests
 import json
 
-def login_and_get_token(username="tenant@thingsboard.org", password="tenant", base_url="http://localhost:8081"):
+def login_and_get_token(username="tenant@mobilis.dz", password="tenant", base_url="http://192.168.0.1:8081"):
     """Login and get JWT token for API calls"""
     login_data = {"username": username, "password": password}
     response = requests.post(f"{base_url}/api/auth/login", json=login_data)
@@ -16,7 +16,7 @@ def login_and_get_token(username="tenant@thingsboard.org", password="tenant", ba
         return response.json()['token']
     return None
 
-def list_all_devices(jwt_token, base_url="http://localhost:8081"):
+def list_all_devices(jwt_token, base_url="http://192.168.0.1:8081"):
     """List all devices in the tenant"""
     headers = {
         'Authorization': f'Bearer {jwt_token}',
@@ -53,7 +53,7 @@ def list_all_devices(jwt_token, base_url="http://localhost:8081"):
     
     return all_devices
 
-def get_device_telemetry_keys(device_id, jwt_token, base_url="http://localhost:8081"):
+def get_device_telemetry_keys(device_id, jwt_token, base_url="http://192.168.0.1:8081"):
     """Get available telemetry keys for a device"""
     headers = {
         'Authorization': f'Bearer {jwt_token}',

@@ -1,0 +1,21 @@
+# Weather Station Requirements
+# Install with: pip install -r exp/weather_station_requirements.txt
+
+# Open-Meteo API client
+openmeteo-requests>=1.0.0
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.21.0
+
+# HTTP requests and caching
+requests>=2.28.0
+requests-cache>=1.0.0
+retry-requests>=2.0.0
+
+# JSON processing (usually included with Python)
+# json - built-in module
+
+# Time and date handling (usually included with Python)
+# datetime - built-in module
+# time - built-in module

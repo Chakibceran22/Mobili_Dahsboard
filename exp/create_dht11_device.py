@@ -13,7 +13,7 @@ Prerequisites:
 import requests
 import json
 
-def get_auth_token(username="tenant@thingsboard.org", password="tenant", base_url="http://localhost:8081"):
+def get_auth_token(username="tenant@mobilis.dz", password="tenant", base_url="http://localhost:8081"):
     """Get authentication token from ThingsBoard"""
     auth_data = {
         "username": username,

@@ -48,7 +48,7 @@ export interface VisualizationMessage {
   providedIn: 'root'
 })
 export class AiVisualizerService {
-  private readonly API_BASE_URL = 'http://192.168.0.101:8003';
+  private readonly API_BASE_URL = 'http://192.168.0.1:8003';
 
   constructor(private http: HttpClient) {}
 

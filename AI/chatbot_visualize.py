@@ -285,17 +285,24 @@ def execute_device_pipeline(params=None):
     Execute the device_pipeline.py script with optional parameters
     """
     try:
-        # Execute from root directory using relative path
-        script_path = 'AI/device_pipeline.py'
-
-        # Use the virtual environment python if available
-        venv_python = os.path.join(os.path.dirname(__file__), '..', 'venv', 'bin', 'python3')
-        if os.path.exists(venv_python):
-            cmd = [venv_python, script_path]
-            print(f"🐍 Using virtual environment python: {venv_python}")
-        else:
+        # Check if we're in a container environment
+        if os.path.exists('/app/device_pipeline.py'):
+            # Container environment - script is in current directory
+            script_path = 'device_pipeline.py'
             cmd = ['python3', script_path]
-            print(f"🐍 Using system python3")
+            print(f"🐳 Using container environment")
+        else:
+            # Host environment - script is in AI subdirectory
+            script_path = 'AI/device_pipeline.py'
+            
+            # Use the virtual environment python if available
+            venv_python = os.path.join(os.path.dirname(__file__), '..', 'venv', 'bin', 'python3')
+            if os.path.exists(venv_python):
+                cmd = [venv_python, script_path]
+                print(f"🐍 Using virtual environment python: {venv_python}")
+            else:
+                cmd = ['python3', script_path]
+                print(f"🐍 Using system python3")
 
         # Add parameters if provided - ensure we use all parameters from smart selector
         if params:
@@ -335,18 +342,24 @@ def execute_device_pipeline(params=None):
         print(f"🔧 DEBUG: Full command being executed:")
         print(f"   {' '.join(cmd)}")
 
-        # Get the root directory (parent of AI directory)
-        root_dir = os.path.dirname(os.path.dirname(__file__))
-        print(f"🔧 DEBUG: Working directory: {root_dir}")
-        print(f"🔧 DEBUG: Script path exists: {os.path.exists(os.path.join(root_dir, script_path))}")
+        # Determine working directory based on environment
+        if os.path.exists('/app/device_pipeline.py'):
+            # Container environment - work from /app
+            work_dir = '/app'
+        else:
+            # Host environment - work from root directory (parent of AI directory)
+            work_dir = os.path.dirname(os.path.dirname(__file__))
+        
+        print(f"🔧 DEBUG: Working directory: {work_dir}")
+        print(f"🔧 DEBUG: Script path exists: {os.path.exists(os.path.join(work_dir, script_path))}")
 
-        # Execute the pipeline from root directory
+        # Execute the pipeline
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
             timeout=120,  # 2 minute timeout
-            cwd=root_dir  # Execute from root directory
+            cwd=work_dir
         )
 
         print(f"🔧 DEBUG: Pipeline execution completed")
@@ -361,16 +374,27 @@ def execute_device_pipeline(params=None):
             # Find the most recent plot file
             plot_url = None
             try:
-                plots_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plots')
-                if os.path.exists(plots_dir):
-                    # Get all PNG files in plots directory
-                    plot_files = glob.glob(os.path.join(plots_dir, '*.png'))
-                    if plot_files:
-                        # Get the most recent plot file
-                        latest_plot = max(plot_files, key=os.path.getctime)
-                        plot_filename = os.path.basename(latest_plot)
-                        plot_url = f"http://192.168.0.101:8003/plots/{plot_filename}"
-                        print(f"📊 Generated plot URL: {plot_url}")
+                # Check both possible plot directories (container vs host)
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                plots_dirs = [
+                    os.path.join(script_dir, 'plots'),  # Container: /app/plots
+                    os.path.join(script_dir, 'AI', 'plots')  # Host: /app/AI/plots  
+                ]
+                
+                plot_files = []
+                for plots_dir in plots_dirs:
+                    if os.path.exists(plots_dir):
+                        plot_files.extend(glob.glob(os.path.join(plots_dir, '*.png')))
+                        print(f"🔍 Found {len(glob.glob(os.path.join(plots_dir, '*.png')))} plots in {plots_dir}")
+                
+                if plot_files:
+                    # Get the most recent plot file
+                    latest_plot = max(plot_files, key=os.path.getctime)
+                    plot_filename = os.path.basename(latest_plot)
+                    plot_url = f"http://192.168.0.1:8003/plots/{plot_filename}"
+                    print(f"📊 Generated plot URL: {plot_url}")
+                else:
+                    print("⚠️  No plot files found in any directory")
             except Exception as e:
                 print(f"⚠️  Could not determine plot URL: {e}")
 
@@ -482,11 +506,22 @@ def health():
 def serve_plot(filename):
     """Serve generated plot images"""
     try:
-        plots_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'plots')
-        file_path = os.path.join(plots_dir, filename)
+        # Check both possible plot directories (container vs host)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        plots_dirs = [
+            os.path.join(script_dir, 'plots'),  # Container: /app/plots
+            os.path.join(script_dir, 'AI', 'plots')  # Host: /app/AI/plots
+        ]
+        
+        file_path = None
+        for plots_dir in plots_dirs:
+            potential_path = os.path.join(plots_dir, filename)
+            if os.path.exists(potential_path):
+                file_path = potential_path
+                break
 
-        # Security check - ensure file is in plots directory and is a PNG
-        if not os.path.exists(file_path) or not filename.endswith('.png'):
+        # Security check - ensure file exists and is a PNG
+        if not file_path or not filename.endswith('.png'):
             return jsonify({"error": "Plot not found"}), 404
 
         return send_file(file_path, mimetype='image/png')
@@ -615,9 +650,9 @@ def main():
     """Main function to start the device pipeline chatbot server"""
     print("🤖 Starting AI-Powered Device Pipeline Chatbot")
     print("=" * 50)
-    print("📡 Server will run on: http://192.168.0.101:8003")
-    print("💬 Chat endpoint: http://192.168.0.101:8003/chat")
-    print("🔍 Health check: http://192.168.0.101:8003/health")
+    print("📡 Server will run on: http://192.168.0.1:8003")
+    print("💬 Chat endpoint: http://192.168.0.1:8003/chat")
+    print("🔍 Health check: http://192.168.0.1:8003/health")
     print()
     print("🎯 This chatbot can:")
     print("  • Use AI to intelligently detect pipeline requests")

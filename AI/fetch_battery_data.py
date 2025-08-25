@@ -85,7 +85,7 @@ def calculate_advanced_time_range(end_time, time_range):
     # Fallback
     return 0, "entire history", None
 
-def get_device_timeseries_by_id(device_id, jwt_token, keys="batteryLevel", base_url="http://localhost:8081",
+def get_device_timeseries_by_id(device_id, jwt_token, keys="batteryLevel", base_url="http://192.168.0.1:8081",
                                 days_back=None, hours_back=None, time_range=None):
     """Fetch time series data directly using device ID - same as widgets do
 
@@ -180,7 +180,7 @@ def save_telemetry_data(telemetry_data, device_id, key_name):
     print(f"💾 Data saved to: {filepath}")
     return filepath
 
-def login_and_get_token(username="tenant@thingsboard.org", password="tenant", base_url="http://localhost:8081"):
+def login_and_get_token(username="tenant@mobilis.dz", password="tenant", base_url="http://192.168.0.1:8081"):
     """Login and get JWT token for API calls"""
     login_data = {"username": username, "password": password}
     response = requests.post(f"{base_url}/api/auth/login", json=login_data)
@@ -188,7 +188,7 @@ def login_and_get_token(username="tenant@thingsboard.org", password="tenant", ba
         return response.json()['token']
     return None
 
-def get_device_info(device_id, jwt_token, base_url="http://localhost:8081"):
+def get_device_info(device_id, jwt_token, base_url="http://192.168.0.1:8081"):
     """Get device information"""
     headers = {
         'Authorization': f'Bearer {jwt_token}',
@@ -202,7 +202,7 @@ def get_device_info(device_id, jwt_token, base_url="http://localhost:8081"):
 
 
 
-def fetch_with_pagination(device_id, jwt_token, keys="batteryLevel", base_url="http://localhost:8081", days_back=None):
+def fetch_with_pagination(device_id, jwt_token, keys="batteryLevel", base_url="http://192.168.0.1:8081", days_back=None):
     """Fetch data with pagination to get more than 10,000 points"""
     print("🔄 Fetching data with pagination for large datasets...")
     

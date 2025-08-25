@@ -26,7 +26,7 @@ except ImportError as e:
     list_all_devices = None
     get_device_telemetry_keys = None
 
-def get_all_devices_with_keys_from_list_devices(base_url="http://localhost:8081"):
+def get_all_devices_with_keys_from_list_devices(base_url="http://192.168.0.1:8081"):
     """Use list_devices.py functions to get all devices with their telemetry keys"""
     if not all([login_and_get_token, list_all_devices, get_device_telemetry_keys]):
         print("❌ list_devices.py functions not available - using fallback")
@@ -79,12 +79,12 @@ def get_all_devices_with_keys_from_list_devices(base_url="http://localhost:8081"
         print("🔄 Falling back to direct implementation...")
         return get_all_devices_with_keys_fallback(base_url)
 
-def get_all_devices_with_keys_fallback(base_url="http://localhost:8081"):
+def get_all_devices_with_keys_fallback(base_url="http://192.168.0.1:8081"):
     """Fallback implementation if list_devices.py is not available"""
     print("⚠️  Using fallback device fetching method")
     
     # Simple login for fallback
-    login_data = {"username": "tenant@thingsboard.org", "password": "tenant"}
+    login_data = {"username": "tenant@mobilis.dz", "password": "tenant"}
     response = requests.post(f"{base_url}/api/auth/login", json=login_data)
     if response.status_code != 200:
         return []

@@ -45747,7 +45747,7 @@
 }
 }
 },
-"revision": "20250728",
+"revision": "20250729",
 "rootUrl": "https://compute.googleapis.com/",
 "schemas": {
 "AWSV4Signature": {
@@ -48471,12 +48471,14 @@ false
 "enum": [
 "CONNECTION",
 "CUSTOM_METRICS",
+"IN_FLIGHT",
 "RATE",
 "UTILIZATION"
 ],
 "enumDescriptions": [
 "Balance based on the number of simultaneous connections.",
 "Based on custom defined and reported metrics.",
+"Balance based on the number of in-flight requests.",
 "Balance based on requests per second (RPS).",
 "Balance based on the backend utilization."
 ],
@@ -48521,6 +48523,21 @@ false
 "format": "int32",
 "type": "integer"
 },
+"maxInFlightRequests": {
+"description": "Defines a maximum number of in-flight requests for the whole NEG or instance group. Not available if backend's balancingMode is RATE or CONNECTION.",
+"format": "int32",
+"type": "integer"
+},
+"maxInFlightRequestsPerEndpoint": {
+"description": "Defines a maximum number of in-flight requests for a single endpoint. Not available if backend's balancingMode is RATE or CONNECTION.",
+"format": "int32",
+"type": "integer"
+},
+"maxInFlightRequestsPerInstance": {
+"description": "Defines a maximum number of in-flight requests for a single VM. Not available if backend's balancingMode is RATE or CONNECTION.",
+"format": "int32",
+"type": "integer"
+},
 "maxRate": {
 "description": "Defines a maximum number of HTTP requests per second (RPS). For usage guidelines, see Rate balancing mode and Utilization balancing mode. Not available if the backend's balancingMode is CONNECTION.",
 "format": "int32",
@@ -48552,6 +48569,19 @@ false
 "No preference.",
 "If preference is unspecified, we set it to the DEFAULT value",
 "Traffic will be sent to this backend first."
+],
+"type": "string"
+},
+"trafficDuration": {
+"enum": [
+"LONG",
+"SHORT",
+"TRAFFIC_DURATION_UNSPECIFIED"
+],
+"enumDescriptions": [
+"Most of the requests are expected to take more than multiple seconds to finish.",
+"Most requests are expected to finish with a sub-second latency.",
+"Traffic duration is unspecified."
 ],
 "type": "string"
 }
@@ -70823,6 +70853,10 @@ false
 "$ref": "ManagedInstancePropertiesFromFlexibilityPolicy",
 "description": "[Output Only] Instance properties selected for this instance resulting from InstanceFlexibilityPolicy."
 },
+"scheduling": {
+"$ref": "ManagedInstanceScheduling",
+"description": "[Output Only] Information about the termination timestamp of the instance, if applicable."
+},
 "targetStatus": {
 "description": "[Output Only] The eventual status of the instance. The instance group manager will not be identified as stable till each managed instance reaches its targetStatus.",
 "enum": [
@@ -70961,6 +70995,17 @@ false
 "Heavily discounted, no guaranteed runtime.",
 "Standard provisioning with user controlled runtime, no discounts."
 ],
+"type": "string"
+}
+},
+"type": "object"
+},
+"ManagedInstanceScheduling": {
+"id": "ManagedInstanceScheduling",
+"properties": {
+"terminationTimestamp": {
+"description": "[Output Only] The timestamp at which the managed instance will be terminated. This is in RFC3339 text format.",
+"format": "google-datetime",
 "type": "string"
 }
 },
@@ -82910,6 +82955,10 @@ false
 "description": "Represents a reservation resource. A reservation ensures that capacity is held in a specific zone even if the reserved VMs are not running. For more information, read Reserving zonal resources.",
 "id": "Reservation",
 "properties": {
+"advancedDeploymentControl": {
+"$ref": "ReservationAdvancedDeploymentControl",
+"description": "Advanced control for cluster management, applicable only to DENSE deployment type reservations."
+},
 "aggregateReservation": {
 "$ref": "AllocationAggregateReservation",
 "description": "Reservation for aggregated resources, providing shape flexibility."
@@ -83076,6 +83125,27 @@ false
 },
 "zone": {
 "description": "Zone in which the reservation resides. A zone must be provided if the reservation is created within a commitment.",
+"type": "string"
+}
+},
+"type": "object"
+},
+"ReservationAdvancedDeploymentControl": {
+"description": "Advance control for cluster management, applicable only to DENSE deployment type reservations.",
+"id": "ReservationAdvancedDeploymentControl",
+"properties": {
+"reservationOperationalMode": {
+"description": "Indicates chosen reservation operational mode for the reservation.",
+"enum": [
+"ALL_CAPACITY",
+"HIGHLY_AVAILABLE_CAPACITY",
+"RESERVATION_OPERATIONAL_MODE_UNSPECIFIED"
+],
+"enumDescriptions": [
+"Google Cloud does not manage the failure of machines, but provides additional capacity, which is not guaranteed to be available.",
+"Google Cloud manages the failure of machines to provide high availability.",
+""
+],
 "type": "string"
 }
 },
@@ -84521,7 +84591,8 @@ false
 "type": "string"
 },
 "workloadPolicy": {
-"$ref": "ResourcePolicyWorkloadPolicy"
+"$ref": "ResourcePolicyWorkloadPolicy",
+"description": "Resource policy for defining instance placement for MIGs."
 }
 },
 "type": "object"
@@ -85156,9 +85227,11 @@ false
 "id": "ResourcePolicyWorkloadPolicy",
 "properties": {
 "acceleratorTopology": {
+"description": "Specifies the topology required to create a partition for VMs that have interconnected GPUs.",
 "type": "string"
 },
 "maxTopologyDistance": {
+"description": "Specifies the maximum distance between instances.",
 "enum": [
 "BLOCK",
 "CLUSTER",
@@ -85172,13 +85245,14 @@ false
 "type": "string"
 },
 "type": {
+"description": "Specifies the intent of the instance placement in the MIG.",
 "enum": [
 "HIGH_AVAILABILITY",
 "HIGH_THROUGHPUT"
 ],
 "enumDescriptions": [
-"VMs will be provisioned in such a way which provides high availability.",
-"VMs will be provisioned in such a way which provides high throughput."
+"MIG spreads out the instances as much as possible for high availability.",
+"MIG provisions instances as close to each other as possible for high throughput."
 ],
 "type": "string"
 }

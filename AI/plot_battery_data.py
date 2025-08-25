@@ -395,8 +395,22 @@ def plot_latest_data(chart_type="bar"):
     """
     # Use relative paths that work regardless of working directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(script_dir, "data")
-    plots_dir = os.path.join(script_dir, "plots")
+    
+    # Check if we're in container environment where files are in /app directly
+    if os.path.exists(os.path.join(script_dir, "AI", "data")):
+        # Host environment - data is in AI/data
+        data_dir = os.path.join(script_dir, "AI", "data")
+        plots_dir = os.path.join(script_dir, "AI", "plots")
+    else:
+        # Container environment - we are already in the AI directory context
+        data_dir = os.path.join(script_dir, "data")
+        plots_dir = os.path.join(script_dir, "plots")
+    
+    # Ensure plots directory exists
+    os.makedirs(plots_dir, exist_ok=True)
+    
+    print(f"🔧 DEBUG: Looking for data files in: {data_dir}")
+    print(f"🔧 DEBUG: Will save plots to: {plots_dir}")
     
     # Find all JSON files in data directory (both old and new formats)
     json_files = glob.glob(os.path.join(data_dir, "*_data_*.json"))
@@ -460,8 +474,19 @@ def plot_all_data(chart_type="line"):
     """
     # Use relative paths that work regardless of working directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(script_dir, "data")
-    plots_dir = os.path.join(script_dir, "plots")
+    
+    # Check if we're in container environment where files are in /app directly
+    if os.path.exists(os.path.join(script_dir, "AI", "data")):
+        # Host environment - data is in AI/data
+        data_dir = os.path.join(script_dir, "AI", "data")
+        plots_dir = os.path.join(script_dir, "AI", "plots")
+    else:
+        # Container environment - we are already in the AI directory context
+        data_dir = os.path.join(script_dir, "data")
+        plots_dir = os.path.join(script_dir, "plots")
+    
+    # Ensure plots directory exists
+    os.makedirs(plots_dir, exist_ok=True)
     
     # Find all JSON files in data directory (both old and new formats)
     json_files = glob.glob(os.path.join(data_dir, "*_data_*.json"))
@@ -502,11 +527,20 @@ def main(chart_type="line"):
     
     # Create plots directory if it doesn't exist
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    plots_dir = os.path.join(script_dir, "plots")
+    
+    # Check if we're in container environment where files are in /app directly
+    if os.path.exists(os.path.join(script_dir, "AI", "data")):
+        # Host environment - data is in AI/data
+        data_dir = os.path.join(script_dir, "AI", "data")
+        plots_dir = os.path.join(script_dir, "AI", "plots")
+    else:
+        # Container environment - we are already in the AI directory context
+        data_dir = os.path.join(script_dir, "data")
+        plots_dir = os.path.join(script_dir, "plots")
+    
     os.makedirs(plots_dir, exist_ok=True)
 
     # Check if we have any data files
-    data_dir = os.path.join(script_dir, "data")
     if not os.path.exists(data_dir):
         print("❌ Data directory not found. Run fetch_battery_data.py first!")
         return

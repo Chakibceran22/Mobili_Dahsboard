@@ -10,7 +10,7 @@ import requests
 import time
 import json
 
-def login_and_get_token(username="tenant@thingsboard.org", password="tenant", base_url="http://localhost:8081"):
+def login_and_get_token(username="tenant@mobilis.dz", password="tenant", base_url="http://192.168.0.1:8081"):
     """Login and get JWT token for API calls"""
     login_data = {"username": username, "password": password}
     response = requests.post(f"{base_url}/api/auth/login", json=login_data)
@@ -18,7 +18,7 @@ def login_and_get_token(username="tenant@thingsboard.org", password="tenant", ba
         return response.json()['token']
     return None
 
-def get_device_info(device_id, jwt_token, base_url="http://localhost:8081"):
+def get_device_info(device_id, jwt_token, base_url="http://192.168.0.1:8081"):
     """Get device information"""
     headers = {
         'Authorization': f'Bearer {jwt_token}',
@@ -30,7 +30,7 @@ def get_device_info(device_id, jwt_token, base_url="http://localhost:8081"):
         return response.json()
     return None
 
-def get_device_telemetry_keys(device_id, jwt_token, base_url="http://localhost:8081"):
+def get_device_telemetry_keys(device_id, jwt_token, base_url="http://192.168.0.1:8081"):
     """Get available telemetry keys for a device"""
     headers = {
         'Authorization': f'Bearer {jwt_token}',
@@ -43,7 +43,7 @@ def get_device_telemetry_keys(device_id, jwt_token, base_url="http://localhost:8
         return response.json()
     return []
 
-def get_latest_telemetry(device_id, jwt_token, keys, base_url="http://localhost:8081"):
+def get_latest_telemetry(device_id, jwt_token, keys, base_url="http://192.168.0.1:8081"):
     """Get latest telemetry values for specific keys"""
     headers = {
         'Authorization': f'Bearer {jwt_token}',

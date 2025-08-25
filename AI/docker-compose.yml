@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  ai-chatbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mobili-ai-chatbot
+    ports:
+      - "8003:8003"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PYTHONPATH=/app
+      - FLASK_ENV=production
+    volumes:
+      - ./plots:/app/plots  # Mount plots directory for persistent visualizations
+    networks:
+      - mobili-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  mobili-network:
+    driver: bridge

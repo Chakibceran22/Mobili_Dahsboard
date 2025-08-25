@@ -62,7 +62,7 @@ python AI/plot_battery_data.py
 
 The scripts use these default settings:
 - **ThingsBoard URL**: `http://localhost:8081`
-- **Credentials**: `tenant@thingsboard.org` / `tenant`
+- **Credentials**: `tenant@mobilis.dz` / `tenant`
 - **Time Range**: Last 24 hours
 - **Data Limit**: 1000 points
 

@@ -17,7 +17,7 @@ How to get your device access token:
 import requests
 import time
 
-def send_battery_test(access_token, base_url="http://localhost:8081"):
+def send_battery_test(access_token, base_url="http://192.168.0.1:8081"):
     """Send 10 battery readings to an existing device"""
     battery = 85  # Start at 85%
     for i in range(10):
