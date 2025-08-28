@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -13,6 +14,22 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Configure CORS to allow requests from ThingsBoard UI
+CORS(app,
+     origins=["*"],  # Allow all origins for development
+     methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+     allow_headers=["*"],  # Allow all headers
+     supports_credentials=True)
+
+# Additional manual CORS headers as backup
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 # Model parameters (matching your notebook)
 cIntInputSeqLen = 384

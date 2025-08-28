@@ -54,9 +54,9 @@ export class AiAssistantComponent implements OnInit, AfterViewChecked, OnDestroy
   private shouldScrollVisualizerToBottom = false;
 
   sampleQuestions = [
-    "How do I connect a device to ThingsBoard?",
+    "How do I connect a device to Mobilis?",
     "What is device provisioning?",
-    "How to use MQTT with ThingsBoard?",
+    "How to use MQTT with Mobilis?",
     "How to create a dashboard?"
   ];
 

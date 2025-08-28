@@ -3,7 +3,7 @@
   <div class="chat-header">
     <div class="header-left">
       <mat-icon>chat</mat-icon>
-      <h1>ThingsBoard AI Assistant</h1>
+      <h1>Mobilis AI Assistant</h1>
     </div>
     <div class="header-center">
       <!-- Page Toggle Buttons -->
@@ -43,7 +43,7 @@
     <div *ngIf="messages.length === 0" class="welcome-screen">
       <div class="welcome-content">
         <h2>👋 Welcome to Mobilis AI Assistant</h2>
-        <p>Ask questions about Welcome IoT platform and get expert answers!</p>
+        <p>Ask questions about Mobilis IoT platform and get expert answers!</p>
         
         <div *ngIf="!apiKey" class="api-key-prompt">
           <p>🔑 Please set your Gemini API key in settings to get started</p>
@@ -133,7 +133,7 @@
           matInput 
           [(ngModel)]="inputValue"
           (keydown)="onKeyPress($event)"
-          [placeholder]="apiKey ? 'Ask about ThingsBoard...' : 'Configure API key first...'"
+          [placeholder]="apiKey ? 'Ask about Mobilis AI...' : 'Configure API key first...'"
           [disabled]="!apiKey || loading"
           cdkTextareaAutosize
           cdkAutosizeMinRows="1"

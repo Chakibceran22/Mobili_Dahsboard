@@ -26,7 +26,8 @@ export class LogoComponent {
   logo = 'assets/logo_title_white.svg';
 
   gotoThingsboard(): void {
-    window.open('https://thingsboard.io', '_blank');
+    // Navigate to home/dashboard instead of external site
+    // window.open('https://thingsboard.io', '_blank');
   }
 
 }
