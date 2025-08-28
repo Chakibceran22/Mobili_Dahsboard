@@ -293,6 +293,332 @@
     }
   }
 
+  // Battery Prediction Section
+  .battery-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      
+      h2 {
+        color: #333;
+        font-size: 1.5rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        
+        mat-icon {
+          color: #4CAF50;
+        }
+      }
+      
+      .model-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        
+        .model-badge {
+          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-badge {
+          background: #f44336;
+          color: white;
+          padding: 0.3rem 0.8rem;
+          border-radius: 15px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          text-transform: uppercase;
+          
+          &.healthy {
+            background: #4CAF50;
+          }
+        }
+      }
+      
+      .section-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          
+          &.active {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+          }
+        }
+      }
+    }
+    
+    .settings-panel {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+      
+      .settings-header {
+        background: #fff;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+        
+        h3 {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin: 0;
+          color: #333;
+          font-size: 1.1rem;
+          font-weight: 500;
+          
+          mat-icon {
+            color: #4CAF50;
+            font-size: 1.2rem;
+          }
+        }
+      }
+      
+      .settings-content {
+        padding: 1.5rem;
+        
+        .setting-item {
+          margin-bottom: 1.5rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .mat-slide-toggle {
+            margin-bottom: 0.5rem;
+          }
+          
+          .setting-description {
+            margin: 0;
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-left: 2.5rem;
+          }
+        }
+      }
+    }
+    
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      
+      .metric-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        &.health {
+          border-color: #4CAF50;
+          background: #e8f5e8;
+        }
+        
+        &.rul {
+          border-color: #2196F3;
+          background: #e3f2fd;
+        }
+        
+        &.degradation {
+          border-color: #FF9800;
+          background: #fff8e1;
+        }
+        
+        &.eol {
+          border-color: #9C27B0;
+          background: #f3e5f5;
+        }
+        
+        .metric-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.8);
+          
+          mat-icon {
+            font-size: 1.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+          }
+        }
+        
+        .metric-content {
+          flex: 1;
+          
+          .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.25rem;
+            line-height: 1;
+          }
+          
+          .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.1rem;
+          }
+          
+          .metric-unit {
+            color: #999;
+            font-size: 0.75rem;
+            font-style: italic;
+          }
+        }
+      }
+    }
+    
+    .battery-content {
+      .chart-container {
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        
+        .chart {
+          width: 100%;
+          height: 400px;
+        }
+      }
+      
+      .legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          
+          .legend-line {
+            width: 24px;
+            height: 3px;
+            
+            &.input {
+              background: #4CAF50;
+            }
+            
+            &.prediction {
+              background: #2196F3;
+              background-image: repeating-linear-gradient(
+                90deg,
+                #2196F3 0px,
+                #2196F3 5px,
+                transparent 5px,
+                transparent 10px
+              );
+            }
+            
+            &.actual {
+              background: #FF9800;
+            }
+            
+            &.eol {
+              background: #ff5722;
+              background-image: repeating-linear-gradient(
+                90deg,
+                #ff5722 0px,
+                #ff5722 10px,
+                transparent 10px,
+                transparent 15px
+              );
+            }
+          }
+          
+          span {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+    
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 3rem;
+      
+      p {
+        color: #666;
+        font-size: 1rem;
+      }
+    }
+    
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 3rem;
+      
+      mat-icon {
+        font-size: 3rem;
+        width: 3rem;
+        height: 3rem;
+      }
+      
+      p {
+        color: #666;
+        font-size: 1rem;
+        text-align: center;
+      }
+      
+      button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    }
+  }
+
   // Coming Soon Section
   .coming-soon-container {
     text-align: center;
@@ -374,18 +700,54 @@
   .tb-ai-insight-page {
     padding: 1rem;
     
-    .timeseries-section {
+    .timeseries-section, .battery-section {
       padding: 1rem;
       
       .section-header {
         flex-direction: column;
         gap: 1rem;
         align-items: stretch;
+        
+        .model-info {
+          justify-content: center;
+        }
       }
       
       .stats-row {
         grid-template-columns: 1fr;
         gap: 0.5rem;
+      }
+      
+      .metrics-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        
+        .metric-card {
+          padding: 1rem;
+          
+          .metric-icon {
+            width: 40px;
+            height: 40px;
+            
+            mat-icon {
+              font-size: 1.2rem;
+              width: 1.2rem;
+              height: 1.2rem;
+            }
+          }
+          
+          .metric-content {
+            .metric-value {
+              font-size: 1.5rem;
+            }
+          }
+        }
+      }
+      
+      .legend {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
       }
     }
     

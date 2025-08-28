@@ -109,6 +109,159 @@
     </div>
   </div>
 
+  <!-- Battery Health Prediction Section -->
+  <div class="battery-section">
+    <div class="section-header">
+      <h2>
+        <mat-icon>battery_charging_full</mat-icon>
+        Battery Health Prediction
+      </h2>
+      <div class="model-info" *ngIf="batteryHealthStatus">
+        <span class="model-badge">LSTM Model</span>
+        <span class="status-badge" [class.healthy]="batteryHealthStatus.model_loaded && batteryHealthStatus.test_data_loaded">
+          {{ batteryHealthStatus.model_loaded && batteryHealthStatus.test_data_loaded ? 'Ready' : 'Loading...' }}
+        </span>
+      </div>
+      <div class="section-actions">
+        <button mat-icon-button color="primary" (click)="toggleBatterySettings()" 
+                matTooltip="Display Settings" [class.active]="showBatterySettings">
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button mat-raised-button color="primary" (click)="refreshBatteryData()" [disabled]="batteryLoading">
+          <mat-icon>refresh</mat-icon>
+          Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Battery Settings Panel -->
+    <div class="settings-panel" *ngIf="showBatterySettings" [@slideDown]>
+      <div class="settings-header">
+        <h3>
+          <mat-icon>tune</mat-icon>
+          Battery Display Settings
+        </h3>
+      </div>
+      <div class="settings-content">
+        <div class="setting-item">
+          <mat-slide-toggle 
+            [(ngModel)]="showInputSequence"
+            (change)="onBatterySettingsChange()"
+            color="primary">
+            Show Input Sequence
+          </mat-slide-toggle>
+          <p class="setting-description">
+            Display the historical battery capacity data used for prediction
+          </p>
+        </div>
+        <div class="setting-item">
+          <mat-slide-toggle 
+            [(ngModel)]="showActualValues"
+            (change)="onBatterySettingsChange()"
+            color="primary">
+            Show Actual Values
+          </mat-slide-toggle>
+          <p class="setting-description">
+            Show actual measured values for comparison with predictions
+          </p>
+        </div>
+        <div class="setting-item">
+          <mat-slide-toggle 
+            [(ngModel)]="showEOLLine"
+            (change)="onBatterySettingsChange()"
+            color="primary">
+            Show End-of-Life Threshold
+          </mat-slide-toggle>
+          <p class="setting-description">
+            Display the 80% capacity threshold line indicating end-of-life
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="battery-content" *ngIf="!batteryLoading && !batteryError">
+      <!-- Battery Health Metrics -->
+      <div class="metrics-row">
+        <div class="metric-card health" *ngIf="batteryMetrics">
+          <div class="metric-icon">
+            <mat-icon [style.color]="getHealthColor(batteryMetrics.healthPercentage)">battery_charging_full</mat-icon>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">{{ batteryMetrics.healthPercentage }}%</div>
+            <div class="metric-label">Current Health</div>
+          </div>
+        </div>
+        <div class="metric-card rul" *ngIf="batteryMetrics">
+          <div class="metric-icon">
+            <mat-icon color="primary">schedule</mat-icon>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">{{ batteryMetrics.remainingUsefulLife }}</div>
+            <div class="metric-label">Remaining Cycles</div>
+          </div>
+        </div>
+        <div class="metric-card degradation" *ngIf="batteryMetrics">
+          <div class="metric-icon">
+            <mat-icon color="warn">trending_down</mat-icon>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">{{ batteryMetrics.degradationRate }}</div>
+            <div class="metric-label">Degradation Rate</div>
+            <div class="metric-unit">Ah/cycle</div>
+          </div>
+        </div>
+        <div class="metric-card eol" *ngIf="batteryMetrics">
+          <div class="metric-icon">
+            <mat-icon color="accent">flag</mat-icon>
+          </div>
+          <div class="metric-content">
+            <div class="metric-value">{{ batteryMetrics.endOfLifeCycle }}</div>
+            <div class="metric-label">End-of-Life Cycle</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Battery Chart -->
+      <div class="chart-container">
+        <div #batteryChart class="chart"></div>
+      </div>
+
+      <!-- Battery Legend -->
+      <div class="legend">
+        <div class="legend-item" *ngIf="showInputSequence">
+          <div class="legend-line input"></div>
+          <span>Historical Data</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line prediction"></div>
+          <span>LSTM Prediction</span>
+        </div>
+        <div class="legend-item" *ngIf="showActualValues">
+          <div class="legend-line actual"></div>
+          <span>Actual Values</span>
+        </div>
+        <div class="legend-item" *ngIf="showEOLLine">
+          <div class="legend-line eol"></div>
+          <span>End-of-Life (80%)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-container" *ngIf="batteryLoading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Loading battery prediction data...</p>
+    </div>
+
+    <div class="error-container" *ngIf="batteryError">
+      <mat-icon color="warn">error</mat-icon>
+      <p>{{ batteryError }}</p>
+      <button mat-raised-button color="accent" (click)="refreshBatteryData()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+  </div>
+
   <!-- Coming Soon Section for Other Features -->
   <div class="coming-soon-container">
     <div class="coming-soon-content">

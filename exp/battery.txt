@@ -1,4 +1,4 @@
 # Battery Device Credentials
 # Device ID: ef7700f0-81b6-11f0-8ee7-5b3ed42cd9b5
 # Created: 2025-08-25T13:25:15.067119
-token=PId8agGnJAdnPsTVDIpV
+token=0I1pmApmNfD9AXeGApHz
