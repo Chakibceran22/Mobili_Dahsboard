@@ -13,40 +13,42 @@ import subprocess
 import re
 import sys
 import glob
+import logging
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import google.generativeai as genai
 
+# Suppress Google API warnings about ALTS credentials
+os.environ['GRPC_VERBOSITY'] = 'ERROR'
+logging.getLogger('google').setLevel(logging.ERROR)
+
 # Add current directory to path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Import our smart device selector
 try:
     from smart_device_selector import smart_device_selection
-    print("✅ Smart device selector imported successfully")
+    logger.info("✅ Smart device selector imported successfully")
 except ImportError as e:
-    print(f"⚠️  Could not import smart device selector: {e}")
+    logger.warning(f"⚠️  Could not import smart device selector: {e}")
     smart_device_selection = None
 
 # Initialize Flask app
 app = Flask(__name__)
 
+#replace all print statements with logging
+
+# print = logger.info  # Redirect print to logging info
+
 # Configure CORS to allow requests from ThingsBoard UI
 # More permissive CORS configuration for development
 CORS(app,
      origins=["*"],  # Allow all origins for now
-     methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-     allow_headers=["*"],  # Allow all headers
-     supports_credentials=True)
-
-# Additional manual CORS headers as backup
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
+     methods=["GET", "POST", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+     supports_credentials=False)  # Set to False for development with wildcard origins
 
 # Configure Gemini API
 # You need to set your API key as an environment variable
@@ -54,21 +56,21 @@ def after_request(response):
 try:
     api_key = os.getenv('GOOGLE_API_KEY')
     if not api_key:
-        print("⚠️  Warning: GOOGLE_API_KEY environment variable not set")
-        print("   Set it with: export GOOGLE_API_KEY='your_api_key_here'")
+        logger.warning("⚠️  Warning: GOOGLE_API_KEY environment variable not set")
+        logger.warning("   Set it with: export GOOGLE_API_KEY='your_api_key_here'")
     else:
         genai.configure(api_key=api_key)
-        print("✅ Google Generative AI configured successfully")
+        logger.info("✅ Google Generative AI configured successfully")
 except Exception as e:
-    print(f"❌ Error configuring Google Generative AI: {e}")
+    logger.error(f"❌ Error configuring Google Generative AI: {e}")
 
 # Initialize the model
 try:
     # Use Gemini Flash model (fastest and most reliable)
     model = genai.GenerativeModel('models/gemini-2.0-flash-lite')
-    print("✅ models/gemini-1.5-flash model loaded successfully")
+    logger.info("✅ models/gemini-2.0-flash-lite model loaded successfully")
 except Exception as e:
-    print(f"❌ Error loading Gemini Flash model: {e}")
+    logger.error(f"❌ Error loading Gemini Flash model: {e}")
     model = None
 
 def is_pipeline_request(prompt):
@@ -121,13 +123,13 @@ Response:"""
 
         response = model.generate_content(analysis_prompt)
         decision = response.text.strip().upper()
-        
-        print(f"🤖 AI Decision: {decision} for prompt: '{prompt[:50]}...'")
-        
+
+        logger.info(f"🤖 AI Decision: {decision} for prompt: '{prompt[:50]}...'")
+
         return decision == "YES"
         
     except Exception as e:
-        print(f"❌ Error in AI pipeline detection: {e}")
+        logger.error(f"❌ Error in AI pipeline detection: {e}")
         # Fallback to comprehensive keyword check
         keywords = ['pipeline', 'run', 'execute', 'fetch', 'data', 'plot', 'chart', 'show', 'display',
                    'battery', 'temperature', 'humidity', 'visualize', 'graph', 'create']
@@ -165,7 +167,7 @@ def extract_pipeline_params(prompt):
     """
     Use smart device selector to intelligently choose device and parameters
     """
-    print("🧠 Using smart device selection...")
+    logger.info("🧠 Using smart device selection...")
 
     # Try to use smart device selection if available
     if smart_device_selection:
@@ -196,22 +198,22 @@ def extract_pipeline_params(prompt):
                 # Combine params with metadata for return (but keep pipeline params clean)
                 full_params = {**params, **metadata}
 
-                print(f"📋 Extracted parameters from smart selector:")
-                print(f"   🆔 Device ID: {params['device_id']}")
-                print(f"   📱 Device Name: {metadata['device_name']}")
-                print(f"   🔑 Keys: {params['keys']}")
-                print(f"   📊 Chart Type: {params['chart_type']}")
+                logger.info(f"📋 Extracted parameters from smart selector:")
+                logger.info(f"   🆔 Device ID: {params['device_id']}")
+                logger.info(f"   📱 Device Name: {metadata['device_name']}")
+                logger.info(f"   🔑 Keys: {params['keys']}")
+                logger.info(f"   📊 Chart Type: {params['chart_type']}")
                 if params.get('days_back'):
-                    print(f"   📅 Days Back: {params['days_back']}")
-                print(f"   🎯 Confidence: {metadata['confidence']}")
+                    logger.info(f"   📅 Days Back: {params['days_back']}")
+                logger.info(f"   🎯 Confidence: {metadata['confidence']}")
 
-                print(f"✅ Smart selection successful: {selection['device_name']}")
+                logger.info(f"✅ Smart selection successful: {selection['device_name']}")
                 return full_params
             else:
-                print("⚠️  Smart selection failed, using fallback")
+                logger.warning("⚠️  Smart selection failed, using fallback")
         except Exception as e:
-            print(f"❌ Error in smart device selection: {e}")
-            print("⚠️  Using fallback parameter extraction")
+            logger.error(f"❌ Error in smart device selection: {e}")
+            logger.warning("⚠️  Using fallback parameter extraction")
     
     # Fallback: Use AI for basic parameter extraction
     if not model:
@@ -270,14 +272,14 @@ JSON Response:"""
         
         try:
             params = json.loads(result_text)
-            print(f"🧠 AI extracted parameters: {params}")
+            logger.info(f"🧠 AI extracted parameters: {params}")
             return params
         except json.JSONDecodeError:
-            print(f"⚠️ Could not parse AI response as JSON: {result_text}")
+            logger.warning(f"⚠️ Could not parse AI response as JSON: {result_text}")
             return {}
             
     except Exception as e:
-        print(f"❌ Error in AI parameter extraction: {e}")
+        logger.error(f"❌ Error in AI parameter extraction: {e}")
         return {}
 
 def execute_device_pipeline(params=None):
@@ -290,7 +292,7 @@ def execute_device_pipeline(params=None):
             # Container environment - script is in current directory
             script_path = 'device_pipeline.py'
             cmd = ['python3', script_path]
-            print(f"🐳 Using container environment")
+            logger.info("🐳 Using container environment")
         else:
             # Host environment - script is in AI subdirectory
             script_path = 'AI/device_pipeline.py'
@@ -299,10 +301,10 @@ def execute_device_pipeline(params=None):
             venv_python = os.path.join(os.path.dirname(__file__), '..', 'venv', 'bin', 'python3')
             if os.path.exists(venv_python):
                 cmd = [venv_python, script_path]
-                print(f"🐍 Using virtual environment python: {venv_python}")
+                logger.info(f"🐍 Using virtual environment python: {venv_python}")
             else:
                 cmd = ['python3', script_path]
-                print(f"🐍 Using system python3")
+                logger.info(f"🐍 Using system python3")
 
         # Add parameters if provided - ensure we use all parameters from smart selector
         if params:
@@ -325,22 +327,22 @@ def execute_device_pipeline(params=None):
                     import json
                     cmd.extend(['--time-range', json.dumps(time_range)])
 
-        print(f"🚀 Executing device pipeline with smart selector parameters:")
-        print(f"   Command: {' '.join(cmd)}")
+        logger.info(f"🚀 Executing device pipeline with smart selector parameters:")
+        logger.info(f"   Command: {' '.join(cmd)}")
         if params:
-            print(f"   � Device: {params.get('device_name', 'Unknown')} ({params.get('device_id', 'No ID')[:8]}...)")
-            print(f"   🔑 Keys: {params.get('keys', 'No keys')}")
-            print(f"   📊 Chart: {params.get('chart_type', 'line')}")
+            logger.info(f"   � Device: {params.get('device_name', 'Unknown')} ({params.get('device_id', 'No ID')[:8]}...)")
+            logger.info(f"   🔑 Keys: {params.get('keys', 'No keys')}")
+            logger.info(f"   📊 Chart: {params.get('chart_type', 'line')}")
 
             # Display time range information
             if params.get('time_range'):
                 time_desc = format_time_range_for_display(params['time_range'])
-                print(f"   📅 Time Range: {time_desc}")
+                logger.info(f"   📅 Time Range: {time_desc}")
 
-            print(f"   🎯 Confidence: {params.get('confidence', 'unknown')}")
+            logger.info(f"   🎯 Confidence: {params.get('confidence', 'unknown')}")
 
-        print(f"🔧 DEBUG: Full command being executed:")
-        print(f"   {' '.join(cmd)}")
+        logger.info("🔧 DEBUG: Full command being executed:")
+        logger.info(f"   {' '.join(cmd)}")
 
         # Determine working directory based on environment
         if os.path.exists('/app/device_pipeline.py'):
@@ -350,8 +352,8 @@ def execute_device_pipeline(params=None):
             # Host environment - work from root directory (parent of AI directory)
             work_dir = os.path.dirname(os.path.dirname(__file__))
         
-        print(f"🔧 DEBUG: Working directory: {work_dir}")
-        print(f"🔧 DEBUG: Script path exists: {os.path.exists(os.path.join(work_dir, script_path))}")
+        logger.info("🔧 DEBUG: Working directory: {work_dir}")
+        logger.info("🔧 DEBUG: Script path exists: {os.path.exists(os.path.join(work_dir, script_path))}")
 
         # Execute the pipeline
         result = subprocess.run(
@@ -362,10 +364,10 @@ def execute_device_pipeline(params=None):
             cwd=work_dir
         )
 
-        print(f"🔧 DEBUG: Pipeline execution completed")
-        print(f"   Return code: {result.returncode}")
-        print(f"   STDOUT: {result.stdout[:500] if result.stdout else 'No stdout'}")
-        print(f"   STDERR: {result.stderr[:500] if result.stderr else 'No stderr'}")
+        logger.info("🔧 DEBUG: Pipeline execution completed")
+        logger.info(f"   Return code: {result.returncode}")
+        logger.info(f"   STDOUT: {result.stdout[:500] if result.stdout else 'No stdout'}")
+        logger.info(f"   STDERR: {result.stderr[:500] if result.stderr else 'No stderr'}")
 
         if result.returncode == 0:
             success_message = 'Device pipeline executed successfully! 📊'
@@ -385,18 +387,18 @@ def execute_device_pipeline(params=None):
                 for plots_dir in plots_dirs:
                     if os.path.exists(plots_dir):
                         plot_files.extend(glob.glob(os.path.join(plots_dir, '*.png')))
-                        print(f"🔍 Found {len(glob.glob(os.path.join(plots_dir, '*.png')))} plots in {plots_dir}")
+                        logger.info(f"🔍 Found {len(glob.glob(os.path.join(plots_dir, '*.png')))} plots in {plots_dir}")
                 
                 if plot_files:
                     # Get the most recent plot file
                     latest_plot = max(plot_files, key=os.path.getctime)
                     plot_filename = os.path.basename(latest_plot)
                     plot_url = f"http://192.168.0.1:8003/plots/{plot_filename}"
-                    print(f"📊 Generated plot URL: {plot_url}")
+                    logger.info(f"📊 Generated plot URL: {plot_url}")
                 else:
-                    print("⚠️  No plot files found in any directory")
+                    logger.warning("⚠️  No plot files found in any directory")
             except Exception as e:
-                print(f"⚠️  Could not determine plot URL: {e}")
+                logger.error(f"⚠️  Could not determine plot URL: {e}")
 
             # Add detailed device info if available from smart selector
             if params:
@@ -502,6 +504,37 @@ def health():
         "timestamp": "2025-08-13"
     })
 
+@app.route('/test-chat', methods=['POST', 'OPTIONS'])
+def test_chat():
+    """Simple test endpoint to verify CORS and basic connectivity"""
+    if request.method == 'OPTIONS':
+        logger.info("🔍 Handling OPTIONS preflight request for /test-chat")
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Accept, Origin, X-Requested-With'
+        return response
+    
+    try:
+        logger.info(f"🔍 Test-chat endpoint called - Method: {request.method}")
+        logger.info(f"🔍 Content-Type: {request.content_type}")
+        logger.info(f"🔍 Headers: {dict(request.headers)}")
+        
+        data = request.get_json(force=True)
+        logger.info(f"🔍 Received data: {data}")
+        
+        return jsonify({
+            "success": True,
+            "message": "Test successful! CORS and connectivity working.",
+            "received_prompt": data.get('prompt', 'No prompt provided'),
+            "timestamp": "2025-09-26"
+        })
+    except Exception as e:
+        logger.error(f"❌ Error in test-chat: {e}")
+        return jsonify({
+            "error": f"Test failed: {str(e)}"
+        }), 500
+
 @app.route('/plots/<filename>', methods=['GET'])
 def serve_plot(filename):
     """Serve generated plot images"""
@@ -528,16 +561,32 @@ def serve_plot(filename):
     except Exception as e:
         return jsonify({"error": f"Error serving plot: {str(e)}"}), 500
 
-@app.route('/chat', methods=['POST'])
+@app.route('/chat', methods=['POST', 'OPTIONS'])
 def chat():
     """Main chat endpoint that accepts prompts and returns AI responses or executes pipeline"""
+    # Handle CORS preflight requests
+    if request.method == 'OPTIONS':
+        logger.info("🔍 Handling OPTIONS preflight request for /chat")
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Accept, Origin, X-Requested-With'
+        return response
+    
     try:
+        logger.info(f"🔍 Chat endpoint called - Method: {request.method}")
+        logger.info(f"🔍 Content-Type: {request.content_type}")
+        logger.info(f"🔍 Headers: {dict(request.headers)}")
+        
         # Get JSON data from request
-        data = request.get_json()
+        data = request.get_json(force=True)  # Force parsing even if content-type is not set
+        logger.info(f"🔍 Received data: {data}")
         
         if not data or 'prompt' not in data:
+            logger.error(f"❌ Invalid request data: {data}")
             return jsonify({
                 "error": "Missing 'prompt' in request body",
+                "received_data": data,
                 "example": {
                     "prompt": "Hello, how are you?"
                 }
@@ -550,15 +599,15 @@ def chat():
                 "error": "Prompt cannot be empty"
             }), 400
         
-        print(f"💬 Received prompt: {user_prompt[:100]}...")
+        logger.info(f"💬 Received prompt: {user_prompt[:100]}...")
         
         # Check if this is a pipeline execution request
         if is_pipeline_request(user_prompt):
-            print("🔍 Detected pipeline request")
+            logger.info("🔍 Detected pipeline request")
 
             # Extract parameters from the prompt using smart device selector
             params = extract_pipeline_params(user_prompt)
-            print(f"📋 Final extracted parameters: {params}")
+            logger.info(f"📋 Final extracted parameters: {params}")
 
             # Validate that we have the minimum required parameters
             if not params or 'device_id' not in params:
@@ -615,7 +664,7 @@ def chat():
             })
     
     except Exception as e:
-        print(f"❌ Error in chat endpoint: {e}")
+        logger.error(f"❌ Error in chat endpoint: {e}")
         return jsonify({
             "error": f"Server error: {str(e)}"
         }), 500
@@ -648,56 +697,53 @@ def test():
 
 def main():
     """Main function to start the device pipeline chatbot server"""
-    print("🤖 Starting AI-Powered Device Pipeline Chatbot")
-    print("=" * 50)
-    print("📡 Server will run on: http://192.168.0.1:8003")
-    print("💬 Chat endpoint: http://192.168.0.1:8003/chat")
-    print("🔍 Health check: http://192.168.0.1:8003/health")
-    print()
-    print("🎯 This chatbot can:")
-    print("  • Use AI to intelligently detect pipeline requests")
-    print("  • Extract parameters using natural language understanding")
-    print("  • Run device_pipeline.py automatically")
-    print("  • Generate data visualizations")
-    print()
-    print("📝 Example prompts:")
-    print("  • 'Run the device pipeline'")
-    print("  • 'Fetch battery data and create a chart'")
-    print("  • 'Get temperature data for the last 7 days'")
-    print("  • 'Execute pipeline with bar chart'")
-    print()
+    logger.info("🤖 Starting AI-Powered Device Pipeline Chatbot")
+    logger.info("📡 Server will run on: http://192.168.0.1:8003")
+    logger.info("💬 Chat endpoint: http://192.168.0.1:8003/chat")
+    logger.info("🔍 Health check: http://192.168.0.1:8003/health")
+    logger.info("🎯 This chatbot can:")
+    logger.info("  • Use AI to intelligently detect pipeline requests")
+    logger.info("  • Extract parameters using natural language understanding")
+    logger.info("  • Run device_pipeline.py automatically")
+    logger.info("  • Generate data visualizations")
+    logger.info("📝 Example prompts:")
+    logger.info("  • 'Run the device pipeline'")
+    logger.info("  • 'Fetch battery data and create a chart'")
+    logger.info("  • 'Get temperature data for the last 7 days'")
+    logger.info("  • 'Execute pipeline with bar chart'")
     
     # Check API key
     if not os.getenv('GOOGLE_API_KEY'):
-        print("⚠️  WARNING: GOOGLE_API_KEY not set!")
-        print("   Set it with: export GOOGLE_API_KEY='your_api_key_here'")
-        print("   The AI decision-making will use fallback keyword detection.")
+        logger.warning("⚠️  WARNING: GOOGLE_API_KEY not set!")
+        logger.info("   Set it with: export GOOGLE_API_KEY='your_api_key_here'")
+        logger.info("   The AI decision-making will use fallback keyword detection.")
     else:
-        print("✅ Google AI API configured")
+        logger.info("✅ Google AI API configured")
     
     # Check if pipeline script exists
     pipeline_script = os.path.join(os.path.dirname(__file__), 'device_pipeline.py')
     if not os.path.exists(pipeline_script):
-        print("⚠️  WARNING: device_pipeline.py not found!")
-        print(f"   Expected at: {pipeline_script}")
-        print("   The chatbot will not be able to execute pipelines.")
+        logger.warning("⚠️  WARNING: device_pipeline.py not found!")
+        logger.info(f"   Expected at: {pipeline_script}")
+        logger.info("   The chatbot will not be able to execute pipelines.")
     else:
-        print("✅ device_pipeline.py found and ready")
+        logger.info("✅ device_pipeline.py found and ready")
     
     # Check model status
     if model:
-        print("✅ Gemini AI model loaded successfully")
+        logger.info("✅ Gemini AI model loaded successfully")
     else:
-        print("⚠️  AI model not loaded - using fallback detection")
+        logger.warning("⚠️  AI model not loaded - using fallback detection")
     
-    print("🚀 Starting server...")
+    logger.info("🚀 Starting server...")
     
     try:
         app.run(host='0.0.0.0', port=8003, debug=False)
     except KeyboardInterrupt:
-        print("\n👋 AI-Powered Pipeline Chatbot stopped")
+        logger.info("\n👋 AI-Powered Pipeline Chatbot stopped")
     except Exception as e:
-        print(f"❌ Error starting server: {e}")
+        logger.error(f"❌ Error starting server: {e}")
+
 
 if __name__ == "__main__":
     main()

@@ -23,29 +23,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-
-  battery-prediction:
-    build:
-      context: .
-      dockerfile: Dockerfile.battery
-    container_name: mobili-battery-prediction
-    ports:
-      - "5010:5010"
-    environment:
-      - PYTHONPATH=/app
-      - FLASK_ENV=production
-    volumes:
-      - ./models:/app/models  # Mount models directory for ML models
-    networks:
-      - mobili-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5010/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s  # Battery model needs more time to load
-
 networks:
   mobili-network:
     driver: bridge

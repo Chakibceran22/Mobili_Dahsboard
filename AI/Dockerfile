@@ -1,5 +1,5 @@
-# Use Python 3.11 slim image as base
-FROM python:3.11-slim
+# Use Python 3.11 slim image based on stable Debian Bookworm
+FROM python:3.11-slim-bookworm
 
 # Set working directory
 WORKDIR /app
@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    curl \ 
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better Docker layer caching

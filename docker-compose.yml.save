@@ -22,8 +22,7 @@ services:
     ports:
       - "8081:8080"      # Web UI (ThingsBoard runs on 9090 internally)
       - "7070:7070"      # Edge RPC
-      - "1883:1883"      # MQTT (standard port for internal connections)
-      - "1884:1883"      # MQTT (external devices compatibility)
+      - "1884:1883"      # MQTT
       - "8883:8883"      # MQTT over SSL
       - "5683-5688:5683-5688/udp"  # CoAP and LwM2M
     logging:
@@ -54,10 +53,11 @@ services:
 volumes:
   postgres-data:
     name: tb-postgres-data
-    external: true
+    driver: local
   tb-data:
     name: tb-data
-    external: true
+    driver: local
   tb-logs:
     name: tb-logs
-    external: true
+    driver: local
+
